@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'comic_vine' => [
+    'key'      => env('COMIC_VINE_API_KEY'),
+    'base_url' => env('COMIC_VINE_BASE_URL'),
+    ],
+
 ];
