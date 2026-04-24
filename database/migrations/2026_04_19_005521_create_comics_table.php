@@ -17,6 +17,8 @@ return new class extends Migration
         $table->string('genre')->nullable();
         $table->text('description')->nullable();
         $table->string('cover_image')->nullable();
+        $table->integer('comic_vine_id')->nullable()->unique();
+        $table->integer('start_year')->nullable();
         $table->timestamps();
     });
 }

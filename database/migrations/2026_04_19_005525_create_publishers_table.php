@@ -18,6 +18,7 @@ return new class extends Migration
         $table->string('country')->nullable();
         $table->text('description')->nullable();
         $table->timestamps();
+        $table->integer('comic_vine_id')->nullable()->unique();
     });
 }
 

@@ -18,6 +18,7 @@ return new class extends Migration
         $table->string('cover_image')->nullable();
         $table->date('release_date')->nullable();
         $table->boolean('recommended_start')->default(false);
+        $table->integer('comic_vine_id')->nullable()->unique();
         $table->timestamps();
     });
 }

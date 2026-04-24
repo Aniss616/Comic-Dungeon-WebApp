@@ -18,6 +18,8 @@ return new class extends Migration
         $table->text('abilities')->nullable();
         $table->string('avatar_url')->nullable();
         $table->string('universe')->nullable();
+        $table->integer('comic_vine_id')->nullable()->unique();
+        $table->text('deck')->nullable(); // Comic Vine's short description field
         $table->timestamps();
     });
 }

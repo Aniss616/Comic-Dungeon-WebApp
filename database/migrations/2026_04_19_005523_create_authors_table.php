@@ -16,6 +16,7 @@ public function up()
         $table->string('name');
         $table->text('bio')->nullable();
         $table->timestamps();
+        $table->integer('comic_vine_id')->nullable()->unique();
     });
 }
 
