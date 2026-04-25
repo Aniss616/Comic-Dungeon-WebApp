@@ -1,62 +1,60 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ComicController;
-use App\Http\Controllers\Api\IssueController;
 use App\Http\Controllers\Api\CharacterController;
-use App\Http\Controllers\Api\AuthorController;
-use App\Http\Controllers\Api\ArtistController;
+use App\Http\Controllers\Api\VolumeController;
+use App\Http\Controllers\Api\IssueController;
 use App\Http\Controllers\Api\PublisherController;
-use App\Http\Controllers\Api\ReadingPathController;
+use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\RandomController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ImportController;
 
-// ─── Public routes ───────────────────────────────
+/*
+|--------------------------------------------------------------------------
+| AUTH
+|--------------------------------------------------------------------------
+*/
 
-// Auth
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 
-// Comics
-Route::get('/comics',                    [ComicController::class, 'index']);
-Route::get('/comics/search',             [ComicController::class, 'search']);
-Route::get('/comics/{id}',               [ComicController::class, 'show']);
-Route::get('/comics/fetch/{comicVineId}',[ComicController::class, 'fetchFromApi']);
-
-// Issues
-Route::get('/issues',                     [IssueController::class, 'index']);
-Route::get('/issues/{id}',                [IssueController::class, 'show']);
-Route::get('/issues/fetch/{comicVineId}', [IssueController::class, 'fetchFromApi']);
+/*
+|--------------------------------------------------------------------------
+| PUBLIC API (DB-BASED)
+|--------------------------------------------------------------------------
+*/
 
 // Characters
-Route::get('/characters',                     [CharacterController::class, 'index']);
-Route::get('/characters/random',              [CharacterController::class, 'random']);
-Route::get('/characters/{id}',                [CharacterController::class, 'show']);
-Route::get('/characters/fetch/{comicVineId}', [CharacterController::class, 'fetchFromApi']);
+Route::get('/characters', [CharacterController::class, 'index']);
+Route::get('/characters/{id}', [CharacterController::class, 'show']);
+
+Route::get('/characters/random', [RandomController::class, 'randomCharacter']);
+
+Route::post('/import/characters', [ImportController::class, 'characters']);
+Route::post('/import/characters/{id}', [ImportController::class, 'character']);
+
+// Volumes (Comics)
+Route::get('/volumes', [VolumeController::class, 'index']);
+Route::get('/volumes/{id}', [VolumeController::class, 'show']);
+
+// Issues
+Route::get('/issues/{id}', [IssueController::class, 'show']);
 
 // Publishers
-Route::get('/publishers',                     [PublisherController::class, 'index']);
-Route::get('/publishers/{id}',                [PublisherController::class, 'show']);
-Route::get('/publishers/fetch/{comicVineId}', [PublisherController::class, 'fetchFromApi']);
+Route::get('/publishers', [PublisherController::class, 'index']);
+Route::get('/publishers/{id}', [PublisherController::class, 'show']);
 
-// Authors
-Route::get('/authors',     [AuthorController::class, 'index']);
-Route::get('/authors/{id}',[AuthorController::class, 'show']);
+// Search
+Route::get('/search', [SearchController::class, 'search']);
 
-// Artists
-Route::get('/artists',      [ArtistController::class, 'index']);
-Route::get('/artists/{id}', [ArtistController::class, 'show']);
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ROUTES
+|--------------------------------------------------------------------------
+*/
 
-// Reading Paths
-Route::get('/reading-paths',      [ReadingPathController::class, 'index']);
-Route::get('/reading-paths/{id}', [ReadingPathController::class, 'show']);
-
-// ─── Protected routes (require login) ────────────
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
-
-    // Reading Paths (create)
-    Route::post('/reading-paths', [ReadingPathController::class, 'store']);
 
 });
