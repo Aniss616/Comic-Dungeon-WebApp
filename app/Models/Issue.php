@@ -3,51 +3,34 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use HasFactory;
 class Issue extends Model
 {
+
     protected $fillable = [
-        'comic_id',
+        'comic_vine_id',
+        'name',
         'issue_number',
-        'cover_image',
-        'release_date',
-        'recommended_start'
+        'description',
+        'image',
+        'volume_id',
     ];
 
-    public function comic()
+    public function volume()
     {
-        return $this->belongsTo(Comic::class);
+        return $this->belongsTo(Volume::class);
     }
 
-    public function authors()
+    public function people()
     {
-        return $this->belongsToMany(Author::class, 'issue_author');
-    }
-
-    public function artists()
-    {
-        return $this->belongsToMany(Artist::class, 'issue_artist');
+        return $this->belongsToMany(Person::class, 'issue_people')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function characters()
     {
-        return $this->belongsToMany(Character::class, 'issue_character');
-    }
-
-    public function readingPaths()
-    {
-        return $this->belongsToMany(ReadingPath::class, 'issue_reading_path');
-    }
-
-    public function readers()
-    {
-        return $this->belongsToMany(User::class, 'user_reads')
-                    ->withPivot('read_date');
-    }
-
-    public function favouritedBy()
-    {
-        return $this->belongsToMany(User::class, 'user_favourites')
-                    ->withPivot('favourite_date');
+        return $this->belongsToMany(Character::class, 'issue_characters')
+            ->withTimestamps();
     }
 }

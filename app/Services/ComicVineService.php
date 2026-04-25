@@ -6,95 +6,128 @@ use Illuminate\Support\Facades\Http;
 
 class ComicVineService
 {
-    protected $apiKey;
-    protected $baseUrl;
+    protected string $apiKey;
+    protected string $baseUrl;
+
+    protected array $fields = [
+        'character' => 'id,name,aliases,deck,image,first_appeared_in_issue',
+        'volume'    => 'id,name,description,image,start_year,publisher',
+        'issue'     => 'id,name,issue_number,description,image,cover_date,volume,character_credits,person_credits',
+        'publisher' => 'id,name,image,deck,location_address',
+    ];
 
     public function __construct()
     {
         $this->apiKey = env('COMIC_VINE_API_KEY');
-        $this->baseUrl = env('COMIC_VINE_BASE_URL');
+        $this->baseUrl = rtrim(env('COMIC_VINE_BASE_URL'), '/');
     }
 
-    private function get($endpoint, $params = [])
+    private function get(string $endpoint, array $params = [])
     {
-        $response = Http::get("{$this->baseUrl}/{$endpoint}", array_merge([
-            'api_key'  => $this->apiKey,
-            'format'   => 'json',
+        $response = Http::timeout(15)->get("{$this->baseUrl}/{$endpoint}", array_merge([
+            'api_key' => $this->apiKey,
+            'format'  => 'json',
         ], $params));
 
         return $response->json();
     }
 
-    // Get a single character by Comic Vine ID
-    public function getCharacter($id)
+    /**
+     * Build ComicVine resource ID format (e.g. 4005-123)
+     */
+    private function buildResource(string $type, int $id): string
     {
-        return $this->get("character/4005-{$id}", [
-            'field_list' => 'id,name,aliases,deck,image,first_appeared_in_issue,powers'
+        return match ($type) {
+            'character' => "4005-{$id}",
+            'volume'    => "4050-{$id}",
+            'issue'     => "4000-{$id}",
+            'publisher' => "4010-{$id}",
+            default     => $id,
+        };
+    }
+
+    /* =========================
+        CHARACTERS
+    ========================= */
+
+    public function getCharacter(int $id)
+    {
+        return $this->get("character/{$this->buildResource('character', $id)}", [
+            'field_list' => $this->fields['character'],
         ]);
     }
 
-    // Get all characters (paginated)
-    public function getCharacters($limit = 10, $offset = 0)
+    public function getCharacters(int $limit = 10, int $offset = 0)
     {
         return $this->get('characters', [
             'limit'      => $limit,
             'offset'     => $offset,
-            'field_list' => 'id,name,aliases,deck,image,first_appeared_in_issue'
+            'field_list' => $this->fields['character'],
         ]);
     }
 
-    // Get a single comic series by ID
-    public function getComic($id)
+    /* =========================
+        VOLUMES (COMICS)
+    ========================= */
+
+    public function getVolume(int $id)
     {
-        return $this->get("volume/4050-{$id}", [
-            'field_list' => 'id,name,description,image,start_year,publisher,genres'
+        return $this->get("volume/{$this->buildResource('volume', $id)}", [
+            'field_list' => $this->fields['volume'],
         ]);
     }
 
-    // Get all comics (paginated)
-    public function getComics($limit = 10, $offset = 0)
+    public function getVolumes(int $limit = 10, int $offset = 0)
     {
         return $this->get('volumes', [
             'limit'      => $limit,
             'offset'     => $offset,
-            'field_list' => 'id,name,description,image,start_year,publisher'
+            'field_list' => $this->fields['volume'],
         ]);
     }
 
-    // Get a single issue by ID
-    public function getIssue($id)
+    /* =========================
+        ISSUES
+    ========================= */
+
+    public function getIssue(int $id)
     {
-        return $this->get("issue/4000-{$id}", [
-            'field_list' => 'id,name,issue_number,image,cover_date,volume,character_credits,person_credits'
+        return $this->get("issue/{$this->buildResource('issue', $id)}", [
+            'field_list' => $this->fields['issue'],
         ]);
     }
 
-    // Get issues by comic/volume ID
-    public function getIssuesByComic($comicId, $limit = 10)
+    public function getIssuesByVolume(int $volumeId, int $limit = 10)
     {
         return $this->get('issues', [
-            'filter'     => "volume:{$comicId}",
+            'filter'     => "volume:{$volumeId}",
             'limit'      => $limit,
-            'field_list' => 'id,name,issue_number,image,cover_date,character_credits'
+            'field_list' => $this->fields['issue'],
         ]);
     }
 
-    // Get a publisher by ID
-    public function getPublisher($id)
+    /* =========================
+        PUBLISHERS
+    ========================= */
+
+    public function getPublisher(int $id)
     {
-        return $this->get("publisher/4010-{$id}", [
-            'field_list' => 'id,name,image,deck,location_address'
+        return $this->get("publisher/{$this->buildResource('publisher', $id)}", [
+            'field_list' => $this->fields['publisher'],
         ]);
     }
 
-    // Search for anything
-    public function search($query, $limit = 10)
+    /* =========================
+        SEARCH
+    ========================= */
+
+    public function search(string $query, int $limit = 10)
     {
         return $this->get('search', [
             'query'      => $query,
             'limit'      => $limit,
-            'resources'  => 'character,volume,issue',
-            'field_list' => 'id,name,image,deck,resource_type'
+            'resources'  => 'character,volume,issue,publisher',
+            'field_list' => 'id,name,image,deck,resource_type',
         ]);
     }
 }

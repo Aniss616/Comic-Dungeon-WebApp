@@ -4,24 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use HasFactory;
-class Character extends Model
+
+    class Person extends Model
 {
 
     protected $fillable = [
         'comic_vine_id',
         'name',
-        'aliases',
         'description',
-        'image',
-    ];
-
-    protected $casts = [
-        'aliases' => 'array', // JSON → array automatically
     ];
 
     public function issues()
     {
-        return $this->belongsToMany(Issue::class, 'issue_characters')
+        return $this->belongsToMany(Issue::class, 'issue_people')
+            ->withPivot('role')
             ->withTimestamps();
     }
 }
