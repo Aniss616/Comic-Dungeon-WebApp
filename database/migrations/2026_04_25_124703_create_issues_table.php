@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('issue_number')->nullable();
             $table->text('description')->nullable();
             $table->string('image')->nullable();
-
+            $table->date('cover_date')->nullable();
             $table->foreignId('volume_id')
                 ->constrained('volumes')
                 ->cascadeOnDelete();

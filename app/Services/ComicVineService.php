@@ -14,6 +14,7 @@ class ComicVineService
         'volume'    => 'id,name,description,image,start_year,publisher',
         'issue'     => 'id,name,issue_number,description,image,cover_date,volume,character_credits,person_credits',
         'publisher' => 'id,name,image,deck,location_address',
+        'person' => 'id,name,deck,image,birth,country',
     ];
 
     public function __construct()
@@ -45,6 +46,7 @@ class ComicVineService
             'volume'    => "4050-{$id}",
             'issue'     => "4000-{$id}",
             'publisher' => "4010-{$id}",
+            'person' => "4040-{$id}",
             default     => $id,
         };
     }
@@ -119,6 +121,23 @@ class ComicVineService
             'field_list' => $this->fields['publisher'],
         ]);
     }
+
+    //people
+    public function getPerson(int $id)
+{
+    return $this->get("person/{$this->buildResource('person', $id)}", [
+        'field_list' => $this->fields['person'],
+    ]);
+}
+
+public function getPersons(int $limit = 10, int $offset = 0)
+{
+    return $this->get('people', [
+        'limit'      => $limit,
+        'offset'     => $offset,
+        'field_list' => $this->fields['person'],
+    ]);
+}
 
     /* =========================
         SEARCH
