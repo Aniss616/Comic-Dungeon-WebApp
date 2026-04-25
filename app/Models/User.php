@@ -9,12 +9,18 @@ class User extends Authenticatable
     protected $fillable = [
         'username',
         'email',
-        'password_hash'
+        'password_hash',
     ];
 
     protected $hidden = [
-        'password_hash'
+        'password_hash',
     ];
+
+    // Tell Laravel to use password_hash instead of password
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
 
     public function reads()
     {
