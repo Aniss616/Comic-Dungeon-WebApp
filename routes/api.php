@@ -42,6 +42,7 @@ Route::get('/publishers/{id}', [PublisherController::class, 'show']);
 
 // Search
 Route::get('/search', [SearchController::class, 'search']);
+Route::get('/search/comicvine', [SearchController::class, 'searchComicVine']);
 
 //people
 Route::post('/persons',      [ImportController::class, 'persons']);

@@ -121,7 +121,30 @@
 
             </div>
         </div>
+        {{-- SEARCH & IMPORT FROM COMIC VINE --}}
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">🔍 Search & Import from Comic Vine</h3>
 
+            {{-- Search Input --}}
+            <div class="flex gap-3 mb-6">
+                <input
+                     type="text"
+                     id="comicVineSearch"
+                    placeholder="Search e.g. Moon Knight, Batman, X-Men..."
+                    class="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition"
+            />
+            <button
+                onclick="searchComicVine()"
+                class="bg-yellow-400 hover:bg-yellow-300 text-zinc-950 font-bold px-6 py-2.5 rounded-lg transition text-sm uppercase tracking-wide">
+            Search
+            </button>
+        </div>
+
+        <p id="searchMsg" class="text-xs text-zinc-500 mb-4"></p>
+
+        {{-- Results --}}
+         <div id="searchResults" class="space-y-6"></div>
+        </div>
         {{-- RANDOMIZER --}}
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">🎲 Random Character</h3>
@@ -134,7 +157,7 @@
 
             <div id="randomResult" class="mt-6 hidden">
                 <div class="bg-zinc-800 rounded-xl p-6 flex flex-col md:flex-row gap-6">
-                    <img id="randomImage" src="" alt="" class="w-32 h-32 object-cover rounded-xl border border-zinc-700"/>
+                    <img id="randomImage" src="" alt="" class="w-32 h-32 object-cover object-top rounded-xl border border-zinc-700"/>
                     <div class="space-y-2 flex-1">
                         <h4 id="randomName" class="text-xl font-black text-yellow-400"></h4>
                         <p id="randomDesc" class="text-zinc-400 text-sm"></p>
@@ -188,7 +211,7 @@
                 @forelse ($recentCharacters as $character)
                     <div class="flex items-center gap-4 py-3 border-b border-zinc-800 last:border-0">
                         @if ($character->image)
-                            <img src="{{ $character->image }}" class="w-10 h-10 object-cover rounded-full border border-zinc-700" />
+                            <img src="{{ $character->image }}" class="w-10 h-10 object-cover object-top rounded-full border border-zinc-700" />
                         @else
                             <div class="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-600 text-xs">?</div>
                         @endif
@@ -302,5 +325,103 @@
         document.getElementById('randomResult').classList.remove('hidden');
         setMsg('randomMsg', '', true);
     }
+    async function searchComicVine() {
+    const q = document.getElementById('comicVineSearch').value.trim();
+    if (!q) return setMsg('searchMsg', 'Please enter a search term', false);
+
+    setMsg('searchMsg', 'Searching Comic Vine...', true);
+    document.getElementById('searchResults').innerHTML = '';
+
+    const data = await callApi(`${apiBase}/search/comicvine?q=${encodeURIComponent(q)}`, 'GET');
+
+    if (!data.results || data.results.length === 0) {
+        return setMsg('searchMsg', 'No results found', false);
+    }
+
+    setMsg('searchMsg', `Found ${data.results.length} results`, true);
+
+    const characters = data.results.filter(r => r.resource_type === 'character');
+    const volumes    = data.results.filter(r => r.resource_type === 'volume');
+    const container  = document.getElementById('searchResults');
+
+    if (characters.length > 0) {
+        container.innerHTML += `
+            <div>
+                <p class="text-zinc-500 text-xs uppercase tracking-wider mb-3">
+                    Characters (${characters.length})
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    ${characters.map(c => `
+                        <div class="bg-zinc-800 rounded-xl p-4 flex items-center gap-4">
+                            <img
+                                src="${c.image?.small_url ?? ''}"
+                                class="w-12 h-12 object-cover object-top rounded-full border border-zinc-700 flex-shrink-0"
+                                onerror="this.style.display='none'"
+                            />
+                            <div class="flex-1 min-w-0">
+                                <p class="text-zinc-100 font-semibold text-sm truncate">${c.name ?? 'Unknown'}</p>
+                                <p class="text-zinc-500 text-xs truncate">${c.deck ?? 'No description'}</p>
+                            </div>
+                            <button
+                                onclick="importCharacterById(${c.id}, this)"
+                                class="flex-shrink-0 bg-yellow-400 hover:bg-yellow-300 text-zinc-950 font-bold px-3 py-1.5 rounded-lg transition text-xs uppercase">
+                                Import
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    if (volumes.length > 0) {
+        container.innerHTML += `
+            <div>
+                <p class="text-zinc-500 text-xs uppercase tracking-wider mb-3">
+                    Volumes (${volumes.length})
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    ${volumes.map(v => `
+                        <div class="bg-zinc-800 rounded-xl p-4 flex items-center gap-4">
+                            <img
+                                src="${v.image?.small_url ?? ''}"
+                                class="w-12 h-16 object-cover object-top rounded border border-zinc-700 flex-shrink-0"
+                                onerror="this.style.display='none'"
+                            />
+                            <div class="flex-1 min-w-0">
+                                <p class="text-zinc-100 font-semibold text-sm truncate">${v.name ?? 'Unknown'}</p>
+                                <p class="text-zinc-500 text-xs truncate">${v.deck ?? 'No description'}</p>
+                            </div>
+                            <button
+                                onclick="importVolumeWithIssues(${v.id}, this)"
+                                class="flex-shrink-0 bg-yellow-400 hover:bg-yellow-300 text-zinc-950 font-bold px-3 py-1.5 rounded-lg transition text-xs uppercase">
+                                Import
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+}
+
+async function importCharacterById(id, btn) {
+    btn.textContent = '...';
+    btn.disabled = true;
+    const data = await callApi(`${apiBase}/import/characters/${id}`);
+    btn.textContent = data.data ? '✓ Done' : '✗ Failed';
+    btn.classList.replace('bg-yellow-400', data.data ? 'bg-green-500' : 'bg-red-500');
+}
+
+async function importVolumeWithIssues(id, btn) {
+    btn.textContent = '...';
+    btn.disabled = true;
+    const data = await callApi(`${apiBase}/import/volumes/${id}/issues`);
+    btn.textContent = data.message ? '✓ Done' : '✗ Failed';
+    btn.classList.replace('bg-yellow-400', data.message ? 'bg-green-500' : 'bg-red-500');
+}
+document.getElementById('comicVineSearch').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') searchComicVine();
+});
 </script>
 @endpush
