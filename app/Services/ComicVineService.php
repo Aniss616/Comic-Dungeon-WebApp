@@ -25,15 +25,16 @@ class ComicVineService
 
     private function get(string $endpoint, array $params = [])
     {
-    $url = "{$this->baseUrl}/{$endpoint}/";
+        usleep(1100000);
+        $url = "{$this->baseUrl}/{$endpoint}/";
 
-    return Http::withoutVerifying()
-        ->timeout(15)
-        ->get($url, array_merge([
-            'api_key' => $this->apiKey,
-            'format'  => 'json',
-        ], $params))
-        ->json();
+        return Http::withoutVerifying()
+            ->timeout(60)
+            ->get($url, array_merge([
+                'api_key' => $this->apiKey,
+                'format'  => 'json',
+            ], $params))
+            ->json();
     }
 
     /**

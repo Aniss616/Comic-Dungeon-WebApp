@@ -405,21 +405,24 @@
     }
 }
 
+async function importVolumeWithIssues(id, btn) {
+    btn.textContent = 'Importing...';
+    btn.disabled = true;
+    btn.classList.replace('bg-yellow-400', 'bg-zinc-500');
+    const data = await callApi(`${apiBase}/import/volumes/${id}/issues`);
+    btn.textContent = data.message ? '✓ Done' : '✗ Failed';
+    btn.classList.replace('bg-zinc-500', data.message ? 'bg-green-500' : 'bg-red-500');
+}
+
 async function importCharacterById(id, btn) {
     btn.textContent = '...';
     btn.disabled = true;
+    btn.classList.replace('bg-yellow-400', 'bg-zinc-500');
     const data = await callApi(`${apiBase}/import/characters/${id}`);
     btn.textContent = data.data ? '✓ Done' : '✗ Failed';
-    btn.classList.replace('bg-yellow-400', data.data ? 'bg-green-500' : 'bg-red-500');
+    btn.classList.replace('bg-zinc-500', data.data ? 'bg-green-500' : 'bg-red-500');
 }
 
-async function importVolumeWithIssues(id, btn) {
-    btn.textContent = '...';
-    btn.disabled = true;
-    const data = await callApi(`${apiBase}/import/volumes/${id}/issues`);
-    btn.textContent = data.message ? '✓ Done' : '✗ Failed';
-    btn.classList.replace('bg-yellow-400', data.message ? 'bg-green-500' : 'bg-red-500');
-}
 document.getElementById('comicVineSearch').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') searchComicVine();
 });
