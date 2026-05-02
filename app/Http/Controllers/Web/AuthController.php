@@ -40,4 +40,32 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login');
     }
+
+    public function showRegister()
+    {
+        if (Auth::check()) {
+            return redirect()->route('home');
+        }
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|max:255|unique:users,username',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = \App\Models\User::create([
+            'username'      => $request->username,
+            'email'         => $request->email,
+            'password_hash' => \Illuminate\Support\Facades\Hash::make($request->password),
+        ]);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('home');
+    }
 }
