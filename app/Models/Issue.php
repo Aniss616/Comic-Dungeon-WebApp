@@ -14,6 +14,7 @@ class Issue extends Model
         'issue_number',
         'description',
         'image',
+        'cover_date',
         'volume_id',
     ];
 
@@ -24,9 +25,9 @@ class Issue extends Model
 
     public function people()
     {
-        return $this->belongsToMany(Person::class, 'issue_people')
-            ->withPivot('role')
-            ->withTimestamps();
+    return $this->belongsToMany(Person::class, 'issue_people', 'issue_id', 'people_id')
+        ->withPivot('role')
+        ->withTimestamps();
     }
 
     public function characters()
