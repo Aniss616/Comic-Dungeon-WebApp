@@ -31,10 +31,12 @@
                     Explore
                 </a>
                 @auth
-                    <a href="{{ route('dashboard') }}"
-                       class="text-sm font-semibold {{ request()->routeIs('dashboard') ? 'text-yellow-400' : 'text-zinc-400 hover:text-zinc-100' }} transition">
-                        Dashboard
-                    </a>
+                    @if(Auth::user()->is_admin)
+                        <a href="{{ route('dashboard') }}"
+                            class="text-sm font-semibold {{ request()->routeIs('dashboard') ? 'text-yellow-400' : 'text-zinc-400 hover:text-zinc-100' }} transition">
+                            Dashboard
+                        </a>
+                    @endif
                 @endauth
             </div>
 

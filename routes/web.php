@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\IssueController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\ExploreController;
 use App\Http\Controllers\Web\ProfileController;
+use App\Http\Controllers\Web\UserActionController;
 
 // Root
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -26,8 +27,15 @@ Route::get('/characters/{id}', [CharacterController::class, 'show'])->name('char
 Route::get('/volumes/{id}',    [VolumeController::class, 'show'])->name('volumes.show');
 Route::get('/issues/{id}',     [IssueController::class, 'show'])->name('issues.show');
 
-// Protected routes
-Route::middleware('auth')->group(function () {
+// Admin only
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/profile',   [ProfileController::class, 'index'])->name('profile');
+});
+
+// Authenticated users
+Route::middleware('auth')->group(function () {
+    Route::get('/profile',                        [ProfileController::class, 'index'])->name('profile');
+    Route::post('/issues/{id}/read',              [UserActionController::class, 'toggleRead'])->name('issues.toggleRead');
+    Route::post('/issues/{id}/favourite',         [UserActionController::class, 'toggleFavouriteIssue'])->name('issues.toggleFavourite');
+    Route::post('/characters/{id}/favourite',     [UserActionController::class, 'toggleFavouriteCharacter'])->name('characters.toggleFavourite');
 });

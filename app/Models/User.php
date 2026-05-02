@@ -10,13 +10,13 @@ class User extends Authenticatable
         'username',
         'email',
         'password_hash',
+        'is_admin',
     ];
 
     protected $hidden = [
         'password_hash',
     ];
 
-    // Tell Laravel to use password_hash instead of password
     public function getAuthPassword()
     {
         return $this->password_hash;
@@ -25,19 +25,20 @@ class User extends Authenticatable
     public function reads()
     {
         return $this->belongsToMany(Issue::class, 'user_reads')
-                    ->withPivot('read_date');
+                    ->withPivot('read_date')
+                    ->withTimestamps();
     }
 
     public function favourites()
     {
         return $this->belongsToMany(Issue::class, 'user_favourites')
-                    ->withPivot('favourite_date');
+                    ->withPivot('favourite_date')
+                    ->withTimestamps();
     }
 
     public function favouriteCharacters()
     {
-        return $this->favourites
-                    ->flatMap->characters
-                    ->unique('id');
+        return $this->belongsToMany(Character::class, 'user_favourite_characters')
+                    ->withTimestamps();
     }
 }

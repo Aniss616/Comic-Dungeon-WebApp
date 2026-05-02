@@ -57,23 +57,33 @@
 
                 {{-- USER ACTIONS --}}
                 @auth
-                    <div class="flex gap-3 pt-2">
-                        <button class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm px-4 py-2 rounded-lg transition">
-                            ✅ Mark as Read
-                        </button>
-                        <button class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm px-4 py-2 rounded-lg transition">
-                            ❤️ Favourite
-                        </button>
-                    </div>
-                @else
-                    <p class="text-zinc-600 text-xs pt-2">
-                        <a href="{{ route('login') }}" class="text-yellow-400 hover:underline">Login</a>
-                        to mark as read or favourite this issue
-                    </p>
-                @endauth
+        @php
+            $isRead      = Auth::user()->reads()->where('issue_id', $issue->id)->exists();
+            $isFavourite = Auth::user()->favourites()->where('issue_id', $issue->id)->exists();
+        @endphp
 
-            </div>
+        <div class="flex gap-3 pt-2">
+            <button
+                id="readBtn"
+                onclick="toggleRead({{ $issue->id }})"
+                class="text-sm px-4 py-2 rounded-lg transition font-semibold
+                    {{ $isRead ? 'bg-green-500 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' }}">
+                {{ $isRead ? '✅ Read' : '☐ Mark as Read' }}
+            </button>
+            <button
+                id="favBtn"
+                onclick="toggleFavouriteIssue({{ $issue->id }})"
+                class="text-sm px-4 py-2 rounded-lg transition font-semibold
+                    {{ $isFavourite ? 'bg-red-500 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' }}">
+                {{ $isFavourite ? '❤️ Favourited' : '🤍 Favourite' }}
+            </button>
         </div>
+    @else
+        <p class="text-zinc-600 text-xs pt-2">
+            <a href="{{ route('login') }}" class="text-yellow-400 hover:underline">Login</a>
+            to mark as read or favourite this issue
+        </p>
+    @endauth
 
         {{-- CHARACTERS --}}
         @if ($issue->characters->count() > 0)
@@ -129,3 +139,44 @@
     </div>
 
 @endsection
+@push('scripts')
+<script>
+    async function toggleRead(id) {
+        const res  = await fetch(`/issues/${id}/read`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+            }
+        });
+        const data = await res.json();
+        const btn  = document.getElementById('readBtn');
+        if (data.status === 'read') {
+            btn.textContent = '✅ Read';
+            btn.className = 'text-sm px-4 py-2 rounded-lg transition font-semibold bg-green-500 text-white';
+        } else {
+            btn.textContent = '☐ Mark as Read';
+            btn.className = 'text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
+        }
+    }
+
+    async function toggleFavouriteIssue(id) {
+        const res  = await fetch(`/issues/${id}/favourite`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+            }
+        });
+        const data = await res.json();
+        const btn  = document.getElementById('favBtn');
+        if (data.status === 'favourited') {
+            btn.textContent = '❤️ Favourited';
+            btn.className = 'text-sm px-4 py-2 rounded-lg transition font-semibold bg-red-500 text-white';
+        } else {
+            btn.textContent = '🤍 Favourite';
+            btn.className = 'text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
+        }
+    }
+</script>
+@endpush

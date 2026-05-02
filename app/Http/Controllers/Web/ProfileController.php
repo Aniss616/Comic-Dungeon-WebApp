@@ -11,14 +11,17 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $favouriteCharacters = collect();
-        $readIssues          = collect();
-        $favouriteIssues     = collect();
+        $favouriteCharacters = $user->favouriteCharacters()->get();
 
-        // These will be populated once we build user features
-        // $favouriteCharacters = $user->favouriteCharacters();
-        // $readIssues          = $user->reads()->with('volume')->get();
-        // $favouriteIssues     = $user->favourites()->with('volume')->get();
+        $readIssues = $user->reads()
+            ->with('volume')
+            ->orderByPivot('read_date', 'desc')
+            ->get();
+
+        $favouriteIssues = $user->favourites()
+            ->with('volume')
+            ->orderByPivot('favourite_date', 'desc')
+            ->get();
 
         return view('profile.index', compact('user', 'favouriteCharacters', 'readIssues', 'favouriteIssues'));
     }
