@@ -7,7 +7,7 @@
     <div class="space-y-8">
 
         {{-- BACK --}}
-        <a href="{{ route('characters.index') }}" class="text-zinc-500 hover:text-yellow-400 text-sm transition">
+        <a href="{{ route('explore') }}?tab=characters" class="text-zinc-500 hover:text-yellow-400 text-sm transition">
             ← Back to Characters
         </a>
 

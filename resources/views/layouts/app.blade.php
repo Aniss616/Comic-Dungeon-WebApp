@@ -11,49 +11,56 @@
 
     {{-- NAVBAR --}}
     <nav class="bg-zinc-900 border-b border-zinc-800 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="max-w-7xl mx-auto grid grid-cols-3 items-center">
 
-            {{-- LOGO --}}
-            <a href="{{ route('characters.index') }}" class="text-yellow-400 font-black text-xl tracking-widest uppercase">
-                ⚡ Comic Dungeon
-            </a>
+            {{-- LEFT — LOGO --}}
+            <div>
+                <a href="{{ route('home') }}" class="text-yellow-400 font-black text-xl tracking-widest uppercase">
+                    ⚡ Comic Dungeon
+                </a>
+            </div>
 
-            {{-- NAV LINKS --}}
-            <div class="hidden md:flex items-center gap-6">
-                <a href="{{ route('characters.index') }}"
-                   class="text-sm {{ request()->routeIs('characters*') ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-zinc-100' }} transition">
-                    Characters
+            {{-- CENTER — NAV LINKS --}}
+            <div class="flex items-center justify-center gap-8">
+                <a href="{{ route('home') }}"
+                   class="text-sm font-semibold {{ request()->routeIs('home') ? 'text-yellow-400' : 'text-zinc-400 hover:text-zinc-100' }} transition">
+                    Home
                 </a>
-                <a href="{{ route('volumes.index') }}"
-                   class="text-sm {{ request()->routeIs('volumes*') ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-zinc-100' }} transition">
-                    Volumes
-                </a>
-                <a href="{{ route('search') }}"
-                   class="text-sm {{ request()->routeIs('search*') ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-zinc-100' }} transition">
-                    Search
+                <a href="{{ route('explore') }}"
+                   class="text-sm font-semibold {{ request()->routeIs('explore') ? 'text-yellow-400' : 'text-zinc-400 hover:text-zinc-100' }} transition">
+                    Explore
                 </a>
                 @auth
-                <a href="{{ route('dashboard') }}"
-                   class="text-sm {{ request()->routeIs('dashboard*') ? 'text-yellow-400 font-semibold' : 'text-zinc-400 hover:text-zinc-100' }} transition">
-                    Dashboard
-                </a>
+                    <a href="{{ route('dashboard') }}"
+                       class="text-sm font-semibold {{ request()->routeIs('dashboard') ? 'text-yellow-400' : 'text-zinc-400 hover:text-zinc-100' }} transition">
+                        Dashboard
+                    </a>
                 @endauth
             </div>
 
-            {{-- AUTH --}}
-            <div class="flex items-center gap-4">
+            {{-- RIGHT — PROFILE / LOGIN --}}
+            <div class="flex items-center justify-end gap-4">
                 @auth
-                    <span class="text-zinc-500 text-sm hidden md:block">
-                        {{ Auth::user()->username }}
-                    </span>
+                    <a href="{{ route('profile') }}" class="flex items-center gap-2 group">
+                        {{-- Avatar --}}
+                        <div class="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 group-hover:border-yellow-400 transition overflow-hidden flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-zinc-500 group-hover:text-yellow-400 transition" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                            </svg>
+                        </div>
+                        <span class="text-zinc-400 text-sm group-hover:text-yellow-400 transition hidden md:block">
+                            {{ Auth::user()->username }}
+                        </span>
+                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-sm text-zinc-400 hover:text-red-400 transition">
+                        <button type="submit" class="text-sm text-zinc-600 hover:text-red-400 transition">
                             Logout
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="text-sm text-zinc-400 hover:text-yellow-400 transition">
+                    <a href="{{ route('login') }}"
+                       class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-zinc-950 font-bold text-sm px-4 py-2 rounded-lg transition">
                         Login
                     </a>
                 @endauth
