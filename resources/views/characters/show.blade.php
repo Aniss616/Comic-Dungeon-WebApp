@@ -4,152 +4,314 @@
 
 @section('content')
 
-    <div class="space-y-8">
+<div class="space-y-8">
 
-        {{-- BACK --}}
-        <a href="{{ route('explore') }}?tab=characters" class="text-zinc-500 hover:text-yellow-400 text-sm transition">
-            ← Back to Characters
-        </a>
+    {{-- BACK --}}
+    <a href="{{ route('explore') }}?tab=characters" class="text-zinc-500 hover:text-yellow-400 text-sm transition">
+        ← Back to Characters
+    </a>
 
-        {{-- HERO --}}
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col md:flex-row gap-8">
+    {{-- HERO --}}
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col md:flex-row gap-8">
 
-            {{-- IMAGE --}}
-            <div class="flex-shrink-0">
-                @if ($character->image)
-                    <img
-                        src="{{ $character->image }}"
-                        alt="{{ $character->name }}"
-                        class="w-48 h-48 object-cover object-top rounded-xl border border-zinc-700"
-                    />
-                @else
-                    <div class="w-48 h-48 bg-zinc-800 rounded-xl flex items-center justify-center text-zinc-600 text-5xl">?</div>
-                @endif
-            </div>
+        {{-- IMAGE --}}
+        <div class="flex-shrink-0 flex flex-col items-center gap-4">
+            @if ($character->image)
+                <img
+                    src="{{ $character->image }}"
+                    alt="{{ $character->name }}"
+                    class="w-56 h-56 object-cover object-top rounded-xl border border-zinc-700"
+                />
+            @else
+                <div class="w-56 h-56 bg-zinc-800 rounded-xl flex items-center justify-center text-zinc-600 text-5xl">?</div>
+            @endif
 
-            {{-- INFO --}}
-            <div class="flex-1 space-y-4">
-                <div>
-                    <h1 class="text-3xl font-black text-yellow-400 uppercase tracking-widest">{{ $character->name }}</h1>
-                    @if ($character->aliases && count($character->aliases) > 0)
-                        <p class="text-zinc-500 text-sm mt-1">
-                            Also known as: {{ implode(', ', $character->aliases) }}
-                        </p>
-                    @endif
-                </div>
+            {{-- USER ACTIONS --}}
+            @auth
+                @php
+                    $isFavourite = Auth::user()->favouriteCharacters()->where('character_id', $character->id)->exists();
+                @endphp
+                <button
+                    id="charFavBtn"
+                    onclick="toggleFavouriteCharacter({{ $character->id }})"
+                    class="w-full text-sm px-4 py-2 rounded-lg transition font-semibold
+                        {{ $isFavourite ? 'bg-red-500 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' }}">
+                    {{ $isFavourite ? '❤️ Favourited' : '🤍 Favourite' }}
+                </button>
+            @else
+                <a href="{{ route('login') }}" class="text-yellow-400 text-xs hover:underline">
+                    Login to favourite
+                </a>
+            @endauth
+        </div>
 
-                @if ($character->description)
-                    <p class="text-zinc-300 text-sm leading-relaxed">
-                        {!! strip_tags($character->description) !!}
+        {{-- INFO --}}
+        <div class="flex-1 space-y-5">
+
+            {{-- NAME --}}
+            <div>
+                <p class="text-zinc-500 text-xs uppercase tracking-widest mb-1">Character</p>
+                <h1 class="text-4xl font-black text-yellow-400 uppercase tracking-widest leading-tight">
+                    {{ $character->name }}
+                </h1>
+                @if ($character->real_name)
+                    <p class="text-zinc-400 text-sm mt-1">
+                        Real Name: <span class="text-zinc-200 font-semibold">{{ $character->real_name }}</span>
                     </p>
                 @endif
+                @if ($character->aliases && count($character->aliases) > 0)
+                    <p class="text-zinc-500 text-xs mt-1">
+                        Also known as: {{ implode(', ', $character->aliases) }}
+                    </p>
+                @endif
+            </div>
 
-                {{-- FIRST APPEARANCE & BEST START --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    @if ($firstAppearance)
-                        <div class="bg-zinc-800 rounded-xl p-4">
-                            <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">First Appearance</p>
-                            <a href="{{ route('issues.show', $firstAppearance->id) }}"
-                               class="text-zinc-100 font-semibold text-sm hover:text-yellow-400 transition">
-                                {{ $firstAppearance->name ?? 'Untitled' }} #{{ $firstAppearance->issue_number ?? '?' }}
-                            </a>
-                            @if ($firstAppearance->cover_date)
-                                <p class="text-zinc-600 text-xs mt-0.5">{{ $firstAppearance->cover_date }}</p>
-                            @endif
+            {{-- DETAILS GRID --}}
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-zinc-800 rounded-xl p-3">
+                    <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Gender</p>
+                    <p class="text-zinc-100 font-semibold text-sm">{{ $character->gender_label }}</p>
+                </div>
+                @if ($character->origin)
+                    <div class="bg-zinc-800 rounded-xl p-3">
+                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Origin</p>
+                        <p class="text-zinc-100 font-semibold text-sm">{{ $character->origin }}</p>
+                    </div>
+                @endif
+                @if ($character->birth)
+                    <div class="bg-zinc-800 rounded-xl p-3">
+                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Birth</p>
+                        <p class="text-zinc-100 font-semibold text-sm">{{ $character->birth }}</p>
+                    </div>
+                @endif
+                @if ($character->publisher)
+                    <div class="bg-zinc-800 rounded-xl p-3">
+                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Publisher</p>
+                        <p class="text-zinc-100 font-semibold text-sm">{{ $character->publisher }}</p>
+                    </div>
+                @endif
+            </div>
+
+            {{-- FIRST APPEARANCE & BEST START --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                @if ($firstAppearance)
+                    <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-2">⭐ First Appearance</p>
+                        <a href="{{ route('issues.show', $firstAppearance->id) }}"
+                           class="text-zinc-100 font-semibold text-sm hover:text-yellow-400 transition block">
+                            {{ $firstAppearance->name ?? 'Untitled' }} #{{ $firstAppearance->issue_number ?? '?' }}
+                        </a>
+                        @if ($firstAppearance->cover_date)
+                            <p class="text-zinc-600 text-xs mt-1">{{ $firstAppearance->cover_date }}</p>
+                        @endif
+                    </div>
+                @endif
+                @if ($bestStart)
+                    <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-2">📖 Best Starting Issue</p>
+                        <a href="{{ route('issues.show', $bestStart->id) }}"
+                           class="text-zinc-100 font-semibold text-sm hover:text-yellow-400 transition block">
+                            {{ $bestStart->name ?? 'Untitled' }} #{{ $bestStart->issue_number ?? '?' }}
+                        </a>
+                        @if ($bestStart->volume)
+                            <p class="text-zinc-600 text-xs mt-1">{{ $bestStart->volume->name }}</p>
+                        @endif
+                    </div>
+                @endif
+            </div>
+
+        </div>
+    </div>
+
+ {{-- BIOGRAPHY SECTIONS --}}
+@if (count($descriptionSections) > 0)
+    <div class="space-y-4">
+        <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest">📋 Biography</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @foreach ($descriptionSections as $index => $section)
+                @php
+                    $accents = [
+                        'border-yellow-400/40 bg-yellow-400/5',
+                        'border-blue-400/40 bg-blue-400/5',
+                        'border-purple-400/40 bg-purple-400/5',
+                        'border-green-400/40 bg-green-400/5',
+                        'border-red-400/40 bg-red-400/5',
+                        'border-orange-400/40 bg-orange-400/5',
+                        'border-pink-400/40 bg-pink-400/5',
+                        'border-cyan-400/40 bg-cyan-400/5',
+                    ];
+                    $titleColors = [
+                        'text-yellow-400',
+                        'text-blue-400',
+                        'text-purple-400',
+                        'text-green-400',
+                        'text-red-400',
+                        'text-orange-400',
+                        'text-pink-400',
+                        'text-cyan-400',
+                    ];
+                    $accent      = $accents[$index % count($accents)];
+                    $titleColor  = $titleColors[$index % count($titleColors)];
+                @endphp
+                <div class="border {{ $accent }} rounded-2xl p-5 relative overflow-hidden group hover:scale-[1.01] transition duration-200">
+                    {{-- decorative corner accent --}}
+                    <div class="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-bl-full {{ str_replace(['border-', '/40'], ['bg-', ''], explode(' ', $accent)[0]) }}"></div>
+
+                    @if ($section['title'])
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-1 h-4 rounded-full {{ str_replace('text-', 'bg-', $titleColor) }}"></div>
+                            <p class="{{ $titleColor }} text-xs font-black uppercase tracking-widest">
+                                {{ $section['title'] }}
+                            </p>
                         </div>
                     @endif
-
-                    @if ($bestStart)
-                        <div class="bg-zinc-800 rounded-xl p-4">
-                            <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Best Starting Issue</p>
-                            <a href="{{ route('issues.show', $bestStart->id) }}"
-                               class="text-zinc-100 font-semibold text-sm hover:text-yellow-400 transition">
-                                {{ $bestStart->name ?? 'Untitled' }} #{{ $bestStart->issue_number ?? '?' }}
-                            </a>
-                            @if ($bestStart->volume)
-                                <p class="text-zinc-600 text-xs mt-0.5">{{ $bestStart->volume->name }}</p>
-                            @endif
-                        </div>
+                    <p class="text-zinc-300 text-sm leading-relaxed">
+                        {{ Str::limit($section['content'], 300) }}
+                    </p>
+                    @if (strlen($section['content']) > 300)
+                        <button
+                            onclick="toggleSection(this)"
+                            data-full="{{ e($section['content']) }}"
+                            data-short="{{ e(Str::limit($section['content'], 300)) }}"
+                            class="{{ $titleColor }} text-xs hover:underline mt-2 block font-semibold">
+                            Read more
+                        </button>
                     @endif
                 </div>
+            @endforeach
+        </div>
+    </div>
+@endif
 
-                {{-- USER ACTIONS --}}
-                @auth
-        @php
-            $isFavourite = Auth::user()->favouriteCharacters()->where('character_id', $character->id)->exists();
-        @endphp
+    {{-- POWERS --}}
+    @if ($character->powers && count($character->powers) > 0)
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">⚡ Powers & Abilities</h3>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($character->powers as $power)
+                    <span class="bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs px-3 py-1.5 rounded-full font-semibold">
+                        {{ $power }}
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
-        <div class="flex gap-3 pt-2">
-            <button
-                id="charFavBtn"
-                onclick="toggleFavouriteCharacter({{ $character->id }})"
-                class="text-sm px-4 py-2 rounded-lg transition font-semibold
-                    {{ $isFavourite ? 'bg-red-500 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' }}">
-                {{ $isFavourite ? '❤️ Favourited' : '🤍 Favourite' }}
-            </button>
+    {{-- TEAMS, FRIENDS, ENEMIES --}}
+    @if (($character->teams && count($character->teams) > 0) ||
+         ($character->character_friends && count($character->character_friends) > 0) ||
+         ($character->character_enemies && count($character->character_enemies) > 0))
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            @if ($character->teams && count($character->teams) > 0)
+                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">🛡️ Teams</h3>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($character->teams as $team)
+                            <span class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-full">
+                                {{ $team['name'] }}
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if ($character->character_friends && count($character->character_friends) > 0)
+                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">🤝 Friends</h3>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($character->character_friends as $friend)
+                            <span class="bg-green-500/10 border border-green-500/30 text-green-400 text-xs px-3 py-1.5 rounded-full">
+                                {{ $friend['name'] }}
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if ($character->character_enemies && count($character->character_enemies) > 0)
+                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">⚔️ Enemies</h3>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($character->character_enemies as $enemy)
+                            <span class="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-1.5 rounded-full">
+                                {{ $enemy['name'] }}
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+        </div>
+    @endif
+
+    {{-- READING PATH --}}
+    @if ($issues->count() > 0)
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
+                📚 Reading Path
+                <span class="text-zinc-600 font-normal text-sm ml-2">({{ $issues->count() }} issues)</span>
+            </h3>
+            <div class="space-y-2">
+                @foreach ($issues as $issue)
+                    <a href="{{ route('issues.show', $issue->id) }}"
+                       class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 transition group">
+                        @if ($issue->image)
+                            <img src="{{ $issue->image }}" alt="{{ $issue->name }}"
+                                 class="w-10 h-14 object-cover object-top rounded flex-shrink-0"/>
+                        @else
+                            <div class="w-10 h-14 bg-zinc-700 rounded flex items-center justify-center text-zinc-500 text-xs flex-shrink-0">N/A</div>
+                        @endif
+                        <div class="flex-1 min-w-0">
+                            <p class="text-zinc-100 font-semibold text-sm group-hover:text-yellow-400 transition truncate">
+                                {{ $issue->name ?? 'Untitled' }}
+                            </p>
+                            <p class="text-zinc-500 text-xs mt-0.5">
+                                {{ $issue->volume->name ?? '' }}
+                                @if ($issue->issue_number) · #{{ $issue->issue_number }} @endif
+                                @if ($issue->cover_date) · {{ $issue->cover_date }} @endif
+                            </p>
+                        </div>
+                        <span class="text-zinc-700 group-hover:text-yellow-400 transition flex-shrink-0">→</span>
+                    </a>
+                @endforeach
+            </div>
         </div>
     @else
-        <p class="text-zinc-600 text-xs pt-2">
-            <a href="{{ route('login') }}" class="text-yellow-400 hover:underline">Login</a> to favourite this character
-        </p>
-    @endauth
-
-        {{-- READING PATH --}}
-        @if ($issues->count() > 0)
-            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                    📚 Reading Path <span class="text-zinc-600 font-normal text-sm">({{ $issues->count() }} issues)</span>
-                </h3>
-
-                <div class="space-y-2">
-                    @foreach ($issues as $issue)
-                        <a href="{{ route('issues.show', $issue->id) }}"
-                           class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 transition group">
-                            @if ($issue->image)
-                                <img
-                                    src="{{ $issue->image }}"
-                                    alt="{{ $issue->name }}"
-                                    class="w-10 h-14 object-cover object-top rounded flex-shrink-0"
-                                />
-                            @else
-                                <div class="w-10 h-14 bg-zinc-700 rounded flex items-center justify-center text-zinc-500 text-xs flex-shrink-0">N/A</div>
-                            @endif
-                            <div class="flex-1 min-w-0">
-                                <p class="text-zinc-100 font-semibold text-sm group-hover:text-yellow-400 transition truncate">
-                                    {{ $issue->name ?? 'Untitled' }}
-                                </p>
-                                <p class="text-zinc-500 text-xs mt-0.5">
-                                    {{ $issue->volume->name ?? '' }}
-                                    @if ($issue->issue_number) · #{{ $issue->issue_number }} @endif
-                                    @if ($issue->cover_date) · {{ $issue->cover_date }} @endif
-                                </p>
-                            </div>
-                            @auth
-                                <span class="text-zinc-600 text-xs flex-shrink-0">Mark as read</span>
-                            @endauth
-                            <span class="text-zinc-700 group-hover:text-yellow-400 transition">→</span>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        @else
-            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center">
-                <p class="text-zinc-600">No issues linked to this character yet.</p>
-                @auth
-                    @if(Auth::user()->is_admin)
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center">
+            <p class="text-zinc-600">No issues linked to this character yet.</p>
+            @auth
+                @if(Auth::user()->is_admin)
                     <a href="{{ route('dashboard') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
                         Import a volume to link issues
                     </a>
-                    @endif
-                @endauth
-            </div>
-        @endif
+                @endif
+            @endauth
+        </div>
+    @endif
 
-    </div>
+</div>
 
 @endsection
+
 @push('scripts')
 <script>
+    function toggleDesc() {
+        const short  = document.getElementById('descShort');
+        const full   = document.getElementById('descFull');
+        const toggle = document.getElementById('descToggle');
+        if (full.classList.contains('hidden')) {
+            short.classList.add('hidden');
+            full.classList.remove('hidden');
+            toggle.textContent = 'Show less';
+        } else {
+            full.classList.add('hidden');
+            short.classList.remove('hidden');
+            toggle.textContent = 'Show more';
+        }
+    }
+
     async function toggleFavouriteCharacter(id) {
         const res  = await fetch(`/characters/${id}/favourite`, {
             method: 'POST',
@@ -162,11 +324,18 @@
         const btn  = document.getElementById('charFavBtn');
         if (data.status === 'favourited') {
             btn.textContent = '❤️ Favourited';
-            btn.className = 'text-sm px-4 py-2 rounded-lg transition font-semibold bg-red-500 text-white';
+            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-red-500 text-white';
         } else {
             btn.textContent = '🤍 Favourite';
-            btn.className = 'text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
+            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
         }
     }
+
+    function toggleSection(btn) {
+    const p     = btn.previousElementSibling;
+    const isFull = btn.textContent.trim() === 'Read less';
+    p.textContent = isFull ? btn.dataset.short : btn.dataset.full;
+    btn.textContent = isFull ? 'Read more' : 'Read less';
+}
 </script>
 @endpush

@@ -122,7 +122,7 @@
         {{-- READ ISSUES --}}
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                ✅ Read Issues
+                ✅ Issues Read
             </h3>
             @if ($readIssues->count() > 0)
                 <div class="space-y-2">

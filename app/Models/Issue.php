@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Issue extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'comic_vine_id',
         'name',
@@ -15,7 +16,17 @@ class Issue extends Model
         'description',
         'image',
         'cover_date',
+        'store_date',
+        'teams',
+        'locations',
+        'story_arc_credits',
         'volume_id',
+    ];
+
+    protected $casts = [
+        'teams'             => 'array',
+        'locations'         => 'array',
+        'story_arc_credits' => 'array',
     ];
 
     public function volume()
@@ -25,9 +36,9 @@ class Issue extends Model
 
     public function people()
     {
-    return $this->belongsToMany(Person::class, 'issue_people', 'issue_id', 'people_id')
-        ->withPivot('role')
-        ->withTimestamps();
+        return $this->belongsToMany(Person::class, 'issue_people', 'issue_id', 'people_id')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function characters()

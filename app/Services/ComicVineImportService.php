@@ -30,15 +30,7 @@ class ComicVineImportService
         $imported = 0;
 
         foreach ($results as $data) {
-            Character::updateOrCreate(
-                ['comic_vine_id' => $data['id']],
-                [
-                    'name'        => $data['name'] ?? null,
-                    'description' => $data['deck'] ?? null,
-                    'aliases'     => $this->parseAliases($data['aliases'] ?? null),
-                    'image'       => $data['image']['original_url'] ?? null,
-                ]
-            );
+            $this->saveCharacter($data);
             $imported++;
         }
 
@@ -52,13 +44,28 @@ class ComicVineImportService
 
         if (!$data) return null;
 
+        return $this->saveCharacter($data);
+    }
+
+    private function saveCharacter(array $data): Character
+    {
         return Character::updateOrCreate(
             ['comic_vine_id' => $data['id']],
             [
-                'name'        => $data['name'] ?? null,
-                'description' => $data['deck'] ?? null,
-                'aliases'     => $this->parseAliases($data['aliases'] ?? null),
-                'image'       => $data['image']['original_url'] ?? null,
+                'name'                    => $data['name'] ?? null,
+                'real_name'               => $data['real_name'] ?? null,
+                'description'             => $data['description'] ?? null,
+                'aliases'                 => $this->parseAliases($data['aliases'] ?? null),
+                'image'                   => $data['image']['original_url'] ?? null,
+                'birth'                   => $data['birth'] ?? null,
+                'gender'                  => $data['gender'] ?? null,
+                'origin'                  => $data['origin']['name'] ?? null,
+                'publisher'               => $data['publisher']['name'] ?? null,
+                'powers'                  => $this->parsePowers($data['powers'] ?? []),
+                'teams'                   => $this->parseNameList($data['teams'] ?? []),
+                'character_friends'       => $this->parseNameList($data['character_friends'] ?? []),
+                'character_enemies'       => $this->parseNameList($data['character_enemies'] ?? []),
+                'first_appeared_in_issue' => $data['first_appeared_in_issue'] ?? null,
             ]
         );
     }
@@ -77,9 +84,13 @@ class ComicVineImportService
         return Publisher::updateOrCreate(
             ['comic_vine_id' => $data['id']],
             [
-                'name'        => $data['name'] ?? null,
-                'description' => $data['deck'] ?? null,
-                'logo_url'    => $data['image']['original_url'] ?? null,
+                'name'             => $data['name'] ?? null,
+                'description'      => $data['deck'] ?? null,
+                'logo_url'         => $data['image']['original_url'] ?? null,
+                'location_city'    => $data['location_city'] ?? null,
+                'location_state'   => $data['location_state'] ?? null,
+                'location_country' => $data['location_country'] ?? null,
+                'aliases'          => $this->parseAliases($data['aliases'] ?? null),
             ]
         );
     }
@@ -105,10 +116,13 @@ class ComicVineImportService
             Volume::updateOrCreate(
                 ['comic_vine_id' => $data['id']],
                 [
-                    'name'         => $data['name'] ?? null,
-                    'description'  => $data['description'] ?? null,
-                    'cover_image'  => $data['image']['original_url'] ?? null,
-                    'publisher_id' => $publisherId,
+                    'name'            => $data['name'] ?? null,
+                    'description'     => $data['description'] ?? null,
+                    'cover_image'     => $data['image']['original_url'] ?? null,
+                    'count_of_issues' => $data['count_of_issues'] ?? null,
+                    'first_issue'     => $data['first_issue'] ?? null,
+                    'last_issue'      => $data['last_issue'] ?? null,
+                    'publisher_id'    => $publisherId,
                 ]
             );
 
@@ -134,10 +148,13 @@ class ComicVineImportService
         return Volume::updateOrCreate(
             ['comic_vine_id' => $data['id']],
             [
-                'name'         => $data['name'] ?? null,
-                'description'  => $data['description'] ?? null,
-                'cover_image'  => $data['image']['original_url'] ?? null,
-                'publisher_id' => $publisherId,
+                'name'            => $data['name'] ?? null,
+                'description'     => $data['description'] ?? null,
+                'cover_image'     => $data['image']['original_url'] ?? null,
+                'count_of_issues' => $data['count_of_issues'] ?? null,
+                'first_issue'     => $data['first_issue'] ?? null,
+                'last_issue'      => $data['last_issue'] ?? null,
+                'publisher_id'    => $publisherId,
             ]
         );
     }
@@ -148,31 +165,32 @@ class ComicVineImportService
 
     public function importIssuesByVolume(int $volumeId, int $limit = 20)
     {
-        // 1. Fetch and persist volume first
         $volume = $this->importVolume($volumeId);
         if (!$volume) return 0;
 
-        // 2. Fetch issues for this volume
         $response = $this->comicVine->getIssuesByVolume($volumeId, $limit);
         if (!isset($response['results'])) return 0;
 
         $imported = 0;
 
         foreach ($response['results'] as $data) {
-            // 3. Save issue
             $issue = Issue::updateOrCreate(
                 ['comic_vine_id' => $data['id']],
                 [
-                    'name'         => $data['name'] ?? null,
-                    'issue_number' => $data['issue_number'] ?? null,
-                    'description'  => $data['description'] ?? null,
-                    'image'        => $data['image']['original_url'] ?? null,
-                    'cover_date'   => $data['cover_date'] ?? null,
-                    'volume_id'    => $volume->id,
+                    'name'              => $data['name'] ?? null,
+                    'issue_number'      => $data['issue_number'] ?? null,
+                    'description'       => $data['description'] ?? null,
+                    'image'             => $data['image']['original_url'] ?? null,
+                    'cover_date'        => $data['cover_date'] ?? null,
+                    'store_date'        => $data['store_date'] ?? null,
+                    'teams'             => $this->parseNameList($data['teams'] ?? []),
+                    'locations'         => $this->parseNameList($data['locations'] ?? []),
+                    'story_arc_credits' => $this->parseNameList($data['story_arc_credits'] ?? []),
+                    'volume_id'         => $volume->id,
                 ]
             );
 
-            // 4. Attach characters
+            // Attach characters
             if (!empty($data['character_credits'])) {
                 foreach ($data['character_credits'] as $charData) {
                     $character = Character::firstOrCreate(
@@ -183,7 +201,7 @@ class ComicVineImportService
                 }
             }
 
-            // 5. Attach people with role
+            // Attach people with role
             if (!empty($data['person_credits'])) {
                 foreach ($data['person_credits'] as $personData) {
                     $person = Person::firstOrCreate(
@@ -209,27 +227,29 @@ class ComicVineImportService
 
         if (!$data) return null;
 
-        // 1. Resolve volume first
         $volumeId = null;
         if (!empty($data['volume'])) {
             $volume   = $this->importVolume($data['volume']['id']);
             $volumeId = $volume?->id;
         }
 
-        // 2. Save issue
         $issue = Issue::updateOrCreate(
             ['comic_vine_id' => $data['id']],
             [
-                'name'         => $data['name'] ?? null,
-                'issue_number' => $data['issue_number'] ?? null,
-                'description'  => $data['description'] ?? null,
-                'image'        => $data['image']['original_url'] ?? null,
-                'cover_date'   => $data['cover_date'] ?? null,
-                'volume_id'    => $volumeId,
+                'name'              => $data['name'] ?? null,
+                'issue_number'      => $data['issue_number'] ?? null,
+                'description'       => $data['description'] ?? null,
+                'image'             => $data['image']['original_url'] ?? null,
+                'cover_date'        => $data['cover_date'] ?? null,
+                'store_date'        => $data['store_date'] ?? null,
+                'teams'             => $this->parseNameList($data['teams'] ?? []),
+                'locations'         => $this->parseNameList($data['locations'] ?? []),
+                'story_arc_credits' => $this->parseNameList($data['story_arc_credits'] ?? []),
+                'volume_id'         => $volumeId,
             ]
         );
 
-        // 3. Attach characters
+        // Attach characters
         if (!empty($data['character_credits'])) {
             foreach ($data['character_credits'] as $charData) {
                 $character = Character::firstOrCreate(
@@ -240,7 +260,7 @@ class ComicVineImportService
             }
         }
 
-        // 4. Attach people with role
+        // Attach people with role
         if (!empty($data['person_credits'])) {
             foreach ($data['person_credits'] as $personData) {
                 $person = Person::firstOrCreate(
@@ -308,5 +328,18 @@ class ComicVineImportService
         return array_values(array_filter(
             array_map('trim', explode("\n", $aliases))
         ));
+    }
+
+    private function parsePowers(array $powers): array
+    {
+        return array_values(array_map(fn($p) => $p['name'], $powers));
+    }
+
+    private function parseNameList(array $items): array
+    {
+        return array_values(array_map(fn($i) => [
+            'id'   => $i['id'],
+            'name' => $i['name'],
+        ], $items));
     }
 }

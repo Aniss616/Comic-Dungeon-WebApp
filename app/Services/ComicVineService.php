@@ -10,10 +10,10 @@ class ComicVineService
     protected string $baseUrl;
 
     protected array $fields = [
-        'character' => 'id,name,aliases,deck,image,first_appeared_in_issue',
-        'volume'    => 'id,name,description,image,start_year,publisher',
-        'issue'     => 'id,name,issue_number,description,image,cover_date,volume,character_credits,person_credits',
-        'publisher' => 'id,name,image,deck,location_address',
+        'character' => 'id,name,aliases,deck,description,image,real_name,birth,gender,origin,publisher,first_appeared_in_issue,powers,teams,character_friends,character_enemies',
+        'volume'    => 'id,name,description,image,start_year,publisher,count_of_issues,first_issue,last_issue',
+        'issue'     => 'id,name,issue_number,description,image,cover_date,store_date,volume,character_credits,person_credits,teams,locations,story_arc_credits',
+        'publisher' => 'id,name,image,deck,location_city,location_state,location_country,aliases',
         'person' => 'id,name,deck,image,birth,country',
     ];
 

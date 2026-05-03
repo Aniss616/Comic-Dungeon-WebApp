@@ -10,22 +10,23 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('volumes', function (Blueprint $table) {
-            $table->id();
-            $table->integer('comic_vine_id')->unique();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->string('cover_image')->nullable();
-
-            $table->foreignId('publisher_id')
+{
+    Schema::create('volumes', function (Blueprint $table) {
+        $table->id();
+        $table->integer('comic_vine_id')->unique();
+        $table->string('name');
+        $table->text('description')->nullable();
+        $table->string('cover_image')->nullable();
+        $table->integer('count_of_issues')->nullable();
+        $table->json('first_issue')->nullable();
+        $table->json('last_issue')->nullable();
+        $table->foreignId('publisher_id')
             ->nullable()
             ->constrained('publishers')
             ->nullOnDelete();
-
         $table->timestamps();
-});
-    }
+    });
+}
 
     /**
      * Reverse the migrations.
