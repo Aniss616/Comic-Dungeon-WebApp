@@ -15,8 +15,8 @@ return new class extends Migration
         $table->id();
         $table->integer('comic_vine_id')->unique();
         $table->string('name');
-        $table->text('description')->nullable();
-        $table->string('logo_url')->nullable();
+        $table->longtext('description')->nullable();
+        $table->text('logo_url')->nullable();
         $table->string('location_city')->nullable();
         $table->string('location_state')->nullable();
         $table->string('location_country')->nullable();

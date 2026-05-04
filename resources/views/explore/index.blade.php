@@ -70,7 +70,7 @@
                                 </div>
                                 <div class="p-3">
                                     <p class="text-zinc-100 font-semibold text-sm truncate">{{ $character->name }}</p>
-                                    <p class="text-zinc-500 text-xs truncate mt-0.5">{{ $character->description ?? 'No description' }}</p>
+                                    <p class="text-zinc-500 text-xs truncate mt-0.5">{{ $character->publisher ?? 'Unknown Publisher' }}</p>
                                 </div>
                             </a>
                         @endforeach

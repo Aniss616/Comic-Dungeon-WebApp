@@ -41,7 +41,19 @@ class VolumeController extends Controller
         $headings = $xpath->query('//h2|//h3|//h4');
 
         if ($headings->length === 0) {
-            return [['title' => null, 'content' => strip_tags($html)]];
+            // No headings — split by paragraphs instead
+            $paragraphs = $xpath->query('//p');
+            if ($paragraphs->length > 0) {
+                foreach ($paragraphs as $p) {
+                    $content = trim(strip_tags($dom->saveHTML($p)));
+                    if (!empty($content)) {
+                        $sections[] = ['title' => null, 'content' => $content];
+                    }
+                }
+            } else {
+                $sections[] = ['title' => null, 'content' => strip_tags($html)];
+            }
+            return $sections;
         }
 
         foreach ($headings as $heading) {

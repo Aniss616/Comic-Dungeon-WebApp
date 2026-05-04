@@ -286,4 +286,28 @@
             btn.textContent = '✅ Read';
             btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-green-500 text-white';
         } else {
-            btn.textCo
+            btn.textContent = '☐ Mark as Read';
+            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
+        }
+    }
+
+    async function toggleFavouriteIssue(id) {
+        const res  = await fetch(`/issues/${id}/favourite`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+            }
+        });
+        const data = await res.json();
+        const btn  = document.getElementById('favBtn');
+        if (data.status === 'favourited') {
+            btn.textContent = '❤️ Favourited';
+            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-red-500 text-white';
+        } else {
+            btn.textContent = '🤍 Favourite';
+            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
+        }
+    }
+</script>
+@endpush

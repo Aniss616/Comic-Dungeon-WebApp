@@ -123,128 +123,120 @@
         </div>
     </div>
 
- {{-- BIOGRAPHY SECTIONS --}}
-@if (count($descriptionSections) > 0)
-    <div class="space-y-4">
-        <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest">📋 Biography</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @foreach ($descriptionSections as $index => $section)
-                @php
-                    $accents = [
-                        'border-yellow-400/40 bg-yellow-400/5',
-                        'border-blue-400/40 bg-blue-400/5',
-                        'border-purple-400/40 bg-purple-400/5',
-                        'border-green-400/40 bg-green-400/5',
-                        'border-red-400/40 bg-red-400/5',
-                        'border-orange-400/40 bg-orange-400/5',
-                        'border-pink-400/40 bg-pink-400/5',
-                        'border-cyan-400/40 bg-cyan-400/5',
-                    ];
-                    $titleColors = [
-                        'text-yellow-400',
-                        'text-blue-400',
-                        'text-purple-400',
-                        'text-green-400',
-                        'text-red-400',
-                        'text-orange-400',
-                        'text-pink-400',
-                        'text-cyan-400',
-                    ];
-                    $accent      = $accents[$index % count($accents)];
-                    $titleColor  = $titleColors[$index % count($titleColors)];
-                @endphp
-                <div class="border {{ $accent }} rounded-2xl p-5 relative overflow-hidden group hover:scale-[1.01] transition duration-200">
-                    {{-- decorative corner accent --}}
-                    <div class="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-bl-full {{ str_replace(['border-', '/40'], ['bg-', ''], explode(' ', $accent)[0]) }}"></div>
+    {{-- POWERS & ABILITIES --}}
+@if ($character->powers && count($character->powers) > 0)
+    <div class="relative bg-zinc-900 border border-yellow-400/20 rounded-2xl p-6 overflow-hidden">
+        {{-- background glow --}}
+        <div class="absolute inset-0 bg-gradient-to-br from-yellow-400/5 to-transparent pointer-events-none"></div>
+        <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-bl-full pointer-events-none"></div>
 
-                    @if ($section['title'])
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-1 h-4 rounded-full {{ str_replace('text-', 'bg-', $titleColor) }}"></div>
-                            <p class="{{ $titleColor }} text-xs font-black uppercase tracking-widest">
-                                {{ $section['title'] }}
-                            </p>
-                        </div>
-                    @endif
-                    <p class="text-zinc-300 text-sm leading-relaxed">
-                        {{ Str::limit($section['content'], 300) }}
-                    </p>
-                    @if (strlen($section['content']) > 300)
-                        <button
-                            onclick="toggleSection(this)"
-                            data-full="{{ e($section['content']) }}"
-                            data-short="{{ e(Str::limit($section['content'], 300)) }}"
-                            class="{{ $titleColor }} text-xs hover:underline mt-2 block font-semibold">
-                            Read more
-                        </button>
-                    @endif
-                </div>
+        <h3 class="text-lg font-bold text-yellow-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span class="text-2xl">⚡</span> Powers & Abilities
+        </h3>
+        <div class="flex flex-wrap gap-2">
+            @foreach ($character->powers as $index => $power)
+                <span class="bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs px-3 py-1.5 rounded-full font-semibold
+                    hover:bg-yellow-400/20 transition {{ $index >= 8 ? 'hidden power-extra' : '' }}">
+                    {{ $power }}
+                </span>
             @endforeach
         </div>
+        @if (count($character->powers) > 8)
+            <button onclick="toggleExtra('power-extra', this)"
+                class="text-yellow-400 text-xs hover:underline mt-3 font-semibold">
+                Show {{ count($character->powers) - 8 }} more
+            </button>
+        @endif
     </div>
 @endif
 
-    {{-- POWERS --}}
-    @if ($character->powers && count($character->powers) > 0)
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">⚡ Powers & Abilities</h3>
-            <div class="flex flex-wrap gap-2">
-                @foreach ($character->powers as $power)
-                    <span class="bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs px-3 py-1.5 rounded-full font-semibold">
-                        {{ $power }}
-                    </span>
-                @endforeach
+{{-- TEAMS, FRIENDS, ENEMIES --}}
+@if (($character->teams && count($character->teams) > 0) ||
+     ($character->character_friends && count($character->character_friends) > 0) ||
+     ($character->character_enemies && count($character->character_enemies) > 0))
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {{-- TEAMS --}}
+        @if ($character->teams && count($character->teams) > 0)
+            <div class="relative bg-zinc-900 border border-blue-400/20 rounded-2xl p-6 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-transparent pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-400/5 rounded-bl-full pointer-events-none"></div>
+
+                <h3 class="text-lg font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="text-2xl">🛡️</span> Teams
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($character->teams as $index => $team)
+                        <span class="bg-blue-400/10 border border-blue-400/30 text-blue-300 text-xs px-3 py-1.5 rounded-full
+                            hover:bg-blue-400/20 transition {{ $index >= 5 ? 'hidden team-extra' : '' }}">
+                            {{ $team['name'] }}
+                        </span>
+                    @endforeach
+                </div>
+                @if (count($character->teams) > 5)
+                    <button onclick="toggleExtra('team-extra', this)"
+                        class="text-blue-400 text-xs hover:underline mt-3 font-semibold">
+                        Show {{ count($character->teams) - 5 }} more
+                    </button>
+                @endif
             </div>
-        </div>
-    @endif
+        @endif
 
-    {{-- TEAMS, FRIENDS, ENEMIES --}}
-    @if (($character->teams && count($character->teams) > 0) ||
-         ($character->character_friends && count($character->character_friends) > 0) ||
-         ($character->character_enemies && count($character->character_enemies) > 0))
+        {{-- FRIENDS --}}
+        @if ($character->character_friends && count($character->character_friends) > 0)
+            <div class="relative bg-zinc-900 border border-green-400/20 rounded-2xl p-6 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-green-400/5 to-transparent pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-24 h-24 bg-green-400/5 rounded-bl-full pointer-events-none"></div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-            @if ($character->teams && count($character->teams) > 0)
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">🛡️ Teams</h3>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($character->teams as $team)
-                            <span class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-full">
-                                {{ $team['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
+                <h3 class="text-lg font-bold text-green-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="text-2xl">🤝</span> Friends
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($character->character_friends as $index => $friend)
+                        <span class="bg-green-400/10 border border-green-400/30 text-green-300 text-xs px-3 py-1.5 rounded-full
+                            hover:bg-green-400/20 transition {{ $index >= 5 ? 'hidden friend-extra' : '' }}">
+                            {{ $friend['name'] }}
+                        </span>
+                    @endforeach
                 </div>
-            @endif
+                @if (count($character->character_friends) > 5)
+                    <button onclick="toggleExtra('friend-extra', this)"
+                        class="text-green-400 text-xs hover:underline mt-3 font-semibold">
+                        Show {{ count($character->character_friends) - 5 }} more
+                    </button>
+                @endif
+            </div>
+        @endif
 
-            @if ($character->character_friends && count($character->character_friends) > 0)
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">🤝 Friends</h3>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($character->character_friends as $friend)
-                            <span class="bg-green-500/10 border border-green-500/30 text-green-400 text-xs px-3 py-1.5 rounded-full">
-                                {{ $friend['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
+        {{-- ENEMIES --}}
+        @if ($character->character_enemies && count($character->character_enemies) > 0)
+            <div class="relative bg-zinc-900 border border-red-400/20 rounded-2xl p-6 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-red-400/5 to-transparent pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-24 h-24 bg-red-400/5 rounded-bl-full pointer-events-none"></div>
+
+                <h3 class="text-lg font-bold text-red-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="text-2xl">⚔️</span> Enemies
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($character->character_enemies as $index => $enemy)
+                        <span class="bg-red-400/10 border border-red-400/30 text-red-300 text-xs px-3 py-1.5 rounded-full
+                            hover:bg-red-400/20 transition {{ $index >= 5 ? 'hidden enemy-extra' : '' }}">
+                            {{ $enemy['name'] }}
+                        </span>
+                    @endforeach
                 </div>
-            @endif
+                @if (count($character->character_enemies) > 5)
+                    <button onclick="toggleExtra('enemy-extra', this)"
+                        class="text-red-400 text-xs hover:underline mt-3 font-semibold">
+                        Show {{ count($character->character_enemies) - 5 }} more
+                    </button>
+                @endif
+            </div>
+        @endif
 
-            @if ($character->character_enemies && count($character->character_enemies) > 0)
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-4">⚔️ Enemies</h3>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($character->character_enemies as $enemy)
-                            <span class="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-1.5 rounded-full">
-                                {{ $enemy['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-        </div>
-    @endif
+    </div>
+@endif
 
     {{-- READING PATH --}}
     @if ($issues->count() > 0)
@@ -291,25 +283,83 @@
         </div>
     @endif
 
+    {{-- BIOGRAPHY --}}
+    @if (count($descriptionSections) > 0)
+        <div class="space-y-4">
+            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest">📋 Biography</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach ($descriptionSections as $index => $section)
+                    @php
+                        $accents = [
+                            'border-yellow-400/40 bg-yellow-400/5',
+                            'border-blue-400/40 bg-blue-400/5',
+                            'border-purple-400/40 bg-purple-400/5',
+                            'border-green-400/40 bg-green-400/5',
+                            'border-red-400/40 bg-red-400/5',
+                            'border-orange-400/40 bg-orange-400/5',
+                            'border-pink-400/40 bg-pink-400/5',
+                            'border-cyan-400/40 bg-cyan-400/5',
+                        ];
+                        $titleColors = [
+                            'text-yellow-400',
+                            'text-blue-400',
+                            'text-purple-400',
+                            'text-green-400',
+                            'text-red-400',
+                            'text-orange-400',
+                            'text-pink-400',
+                            'text-cyan-400',
+                        ];
+                        $accent     = $accents[$index % count($accents)];
+                        $titleColor = $titleColors[$index % count($titleColors)];
+                    @endphp
+                    <div class="border {{ $accent }} rounded-2xl p-5 relative overflow-hidden hover:scale-[1.01] transition duration-200">
+                        <div class="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-bl-full {{ str_replace(['border-', '/40'], ['bg-', ''], explode(' ', $accent)[0]) }}"></div>
+                        @if ($section['title'])
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-1 h-4 rounded-full {{ str_replace('text-', 'bg-', $titleColor) }}"></div>
+                                <p class="{{ $titleColor }} text-xs font-black uppercase tracking-widest">
+                                    {{ $section['title'] }}
+                                </p>
+                            </div>
+                        @endif
+                        <p class="text-zinc-300 text-sm leading-relaxed">
+                            {{ Str::limit($section['content'], 300) }}
+                        </p>
+                        @if (strlen($section['content']) > 300)
+                            <button
+                                onclick="toggleSection(this)"
+                                data-full="{{ e($section['content']) }}"
+                                data-short="{{ e(Str::limit($section['content'], 300)) }}"
+                                class="{{ $titleColor }} text-xs hover:underline mt-2 block font-semibold">
+                                Read more
+                            </button>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
 </div>
 
 @endsection
 
 @push('scripts')
 <script>
-    function toggleDesc() {
-        const short  = document.getElementById('descShort');
-        const full   = document.getElementById('descFull');
-        const toggle = document.getElementById('descToggle');
-        if (full.classList.contains('hidden')) {
-            short.classList.add('hidden');
-            full.classList.remove('hidden');
-            toggle.textContent = 'Show less';
-        } else {
-            full.classList.add('hidden');
-            short.classList.remove('hidden');
-            toggle.textContent = 'Show more';
-        }
+    function toggleExtra(className, btn) {
+        const items  = document.querySelectorAll('.' + className);
+        const isHidden = items[0].classList.contains('hidden');
+        items.forEach(el => el.classList.toggle('hidden'));
+        const count  = items.length;
+        btn.textContent = isHidden ? 'Show less' : `Show ${count} more`;
+    }
+
+    function toggleSection(btn) {
+        const p      = btn.previousElementSibling;
+        const isFull = btn.textContent.trim() === 'Read less';
+        p.textContent = isFull ? btn.dataset.short : btn.dataset.full;
+        btn.textContent = isFull ? 'Read more' : 'Read less';
     }
 
     async function toggleFavouriteCharacter(id) {
@@ -330,12 +380,5 @@
             btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
         }
     }
-
-    function toggleSection(btn) {
-    const p     = btn.previousElementSibling;
-    const isFull = btn.textContent.trim() === 'Read less';
-    p.textContent = isFull ? btn.dataset.short : btn.dataset.full;
-    btn.textContent = isFull ? 'Read more' : 'Read less';
-}
 </script>
 @endpush
