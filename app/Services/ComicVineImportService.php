@@ -165,34 +165,41 @@ class ComicVineImportService
 
     public function importIssuesByVolume(int $volumeId, int $limit = 20)
     {
-        $volume = $this->importVolume($volumeId);
-        if (!$volume) return 0;
+    $volume = $this->importVolume($volumeId);
+    if (!$volume) return 0;
 
-        $response = $this->comicVine->getIssuesByVolume($volumeId, $limit);
+    // Get list of issue IDs for this volume
+    $response = $this->comicVine->getIssuesByVolume($volumeId, $limit);
         if (!isset($response['results'])) return 0;
 
-        $imported = 0;
+    $imported = 0;
 
         foreach ($response['results'] as $data) {
+            // Fetch full issue data to get character_credits, person_credits etc.
+            $fullResponse = $this->comicVine->getIssue($data['id']);
+            $fullData     = $fullResponse['results'] ?? null;
+
+            if (!$fullData) continue;
+
             $issue = Issue::updateOrCreate(
-                ['comic_vine_id' => $data['id']],
+                ['comic_vine_id' => $fullData['id']],
                 [
-                    'name'              => $data['name'] ?? null,
-                    'issue_number'      => $data['issue_number'] ?? null,
-                    'description'       => $data['description'] ?? null,
-                    'image'             => $data['image']['original_url'] ?? null,
-                    'cover_date'        => $data['cover_date'] ?? null,
-                    'store_date'        => $data['store_date'] ?? null,
-                    'teams'             => $this->parseNameList($data['teams'] ?? []),
-                    'locations'         => $this->parseNameList($data['locations'] ?? []),
-                    'story_arc_credits' => $this->parseNameList($data['story_arc_credits'] ?? []),
+                    'name'              => $fullData['name'] ?? null,
+                    'issue_number'      => $fullData['issue_number'] ?? null,
+                    'description'       => $fullData['description'] ?? null,
+                    'image'             => $fullData['image']['original_url'] ?? null,
+                    'cover_date'        => $fullData['cover_date'] ?? null,
+                    'store_date'        => $fullData['store_date'] ?? null,
+                    'teams'             => $this->parseNameList($fullData['teams'] ?? []),
+                    'locations'         => $this->parseNameList($fullData['locations'] ?? []),
+                    'story_arc_credits' => $this->parseNameList($fullData['story_arc_credits'] ?? []),
                     'volume_id'         => $volume->id,
                 ]
             );
 
-            // Attach characters
-            if (!empty($data['character_credits'])) {
-                foreach ($data['character_credits'] as $charData) {
+        // Attach characters
+            if (!empty($fullData['character_credits'])) {
+                foreach ($fullData['character_credits'] as $charData) {
                     $character = Character::firstOrCreate(
                         ['comic_vine_id' => $charData['id']],
                         ['name' => $charData['name'] ?? null]
@@ -201,9 +208,9 @@ class ComicVineImportService
                 }
             }
 
-            // Attach people with role
-            if (!empty($data['person_credits'])) {
-                foreach ($data['person_credits'] as $personData) {
+        // Attach people with role
+            if (!empty($fullData['person_credits'])) {
+                foreach ($fullData['person_credits'] as $personData) {
                     $person = Person::firstOrCreate(
                         ['comic_vine_id' => $personData['id']],
                         ['name' => $personData['name'] ?? null]
@@ -214,7 +221,7 @@ class ComicVineImportService
                 }
             }
 
-            $imported++;
+         $imported++;
         }
 
         return $imported;

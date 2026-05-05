@@ -238,57 +238,73 @@
     </div>
 @endif
 
-    {{-- READING PATH --}}
-    @if ($issues->count() > 0)
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                📚 Reading Path
-                <span class="text-zinc-600 font-normal text-sm ml-2">({{ $issues->count() }} issues)</span>
-            </h3>
-            <div class="space-y-2">
-                @foreach ($issues as $issue)
-                    <a href="{{ route('issues.show', $issue->id) }}"
-                       class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 transition group">
+    {{-- ISSUES --}}
+@if ($issues->count() > 0)
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
+            📚 Comic Appearances
+            <span class="text-zinc-600 font-normal text-sm ml-2">({{ $issues->count() }} issues)</span>
+        </h3>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="issuesGrid">
+            @foreach ($issues->sortBy('cover_date')->values() as $index => $issue)
+                <a href="{{ route('issues.show', $issue->id) }}"
+                   class="bg-zinc-800 border border-zinc-700 hover:border-yellow-400 rounded-xl overflow-hidden transition group
+                       {{ $index >= 12 ? 'hidden issue-extra' : '' }}">
+                    <div class="aspect-[2/3] overflow-hidden bg-zinc-700">
                         @if ($issue->image)
-                            <img src="{{ $issue->image }}" alt="{{ $issue->name }}"
-                                 class="w-10 h-14 object-cover object-top rounded flex-shrink-0"/>
+                            <img
+                                src="{{ $issue->image }}"
+                                alt="{{ $issue->name }}"
+                                class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
+                            />
                         @else
-                            <div class="w-10 h-14 bg-zinc-700 rounded flex items-center justify-center text-zinc-500 text-xs flex-shrink-0">N/A</div>
+                            <div class="w-full h-full flex items-center justify-center text-zinc-600 text-2xl">📄</div>
                         @endif
-                        <div class="flex-1 min-w-0">
-                            <p class="text-zinc-100 font-semibold text-sm group-hover:text-yellow-400 transition truncate">
-                                {{ $issue->name ?? 'Untitled' }}
-                            </p>
-                            <p class="text-zinc-500 text-xs mt-0.5">
-                                {{ $issue->volume->name ?? '' }}
-                                @if ($issue->issue_number) · #{{ $issue->issue_number }} @endif
-                                @if ($issue->cover_date) · {{ $issue->cover_date }} @endif
-                            </p>
-                        </div>
-                        <span class="text-zinc-700 group-hover:text-yellow-400 transition flex-shrink-0">→</span>
-                    </a>
-                @endforeach
-            </div>
+                    </div>
+                    <div class="p-2">
+                        <p class="text-zinc-100 text-xs font-semibold truncate group-hover:text-yellow-400 transition">
+                            {{ $issue->name ?? 'Untitled' }}
+                        </p>
+                        <p class="text-zinc-500 text-xs mt-0.5">
+                            {{ $issue->volume->name ?? '' }}
+                            @if ($issue->issue_number) · #{{ $issue->issue_number }} @endif
+                        </p>
+                        @if ($issue->cover_date)
+                            <p class="text-zinc-600 text-xs mt-0.5">{{ $issue->cover_date }}</p>
+                        @endif
+                    </div>
+                </a>
+            @endforeach
         </div>
-    @else
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center">
-            <p class="text-zinc-600">No issues linked to this character yet.</p>
-            @auth
-                @if(Auth::user()->is_admin)
-                    <a href="{{ route('dashboard') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
-                        Import a volume to link issues
-                    </a>
-                @endif
-            @endauth
-        </div>
-    @endif
+
+        @if ($issues->count() > 12)
+            <button
+                onclick="toggleExtra('issue-extra', this)"
+                class="mt-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm px-6 py-2.5 rounded-lg transition font-semibold w-full">
+                Show {{ $issues->count() - 12 }} more issues
+            </button>
+        @endif
+    </div>
+@else
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center">
+        <p class="text-zinc-600">No issues linked to this character yet.</p>
+        @auth
+            @if(Auth::user()->is_admin)
+                <a href="{{ route('dashboard') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
+                    Import a volume to link issues
+                </a>
+            @endif
+        @endauth
+    </div>
+@endif
 
     {{-- BIOGRAPHY --}}
     @if (count($descriptionSections) > 0)
         <div class="space-y-4">
             <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest">📋 Biography</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach ($descriptionSections as $index => $section)
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="biographyGrid">
+               @foreach ($descriptionSections as $index => $section)
                     @php
                         $accents = [
                             'border-yellow-400/40 bg-yellow-400/5',
@@ -313,7 +329,8 @@
                         $accent     = $accents[$index % count($accents)];
                         $titleColor = $titleColors[$index % count($titleColors)];
                     @endphp
-                    <div class="border {{ $accent }} rounded-2xl p-5 relative overflow-hidden hover:scale-[1.01] transition duration-200">
+                    <div class="border {{ $accent }} rounded-2xl p-5 relative overflow-hidden hover:scale-[1.01] transition duration-200
+                        {{ $index >= 4 ? 'hidden bio-extra' : '' }}">
                         <div class="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-bl-full {{ str_replace(['border-', '/40'], ['bg-', ''], explode(' ', $accent)[0]) }}"></div>
                         @if ($section['title'])
                             <div class="flex items-center gap-2 mb-3">
@@ -338,11 +355,16 @@
                     </div>
                 @endforeach
             </div>
+
+            @if (count($descriptionSections) > 4)
+                <button
+                    onclick="toggleExtra('bio-extra', this)"
+                    class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm px-6 py-2.5 rounded-lg transition font-semibold w-full">
+                    Show {{ count($descriptionSections) - 4 }} more sections
+                </button>
+            @endif
         </div>
     @endif
-
-</div>
-
 @endsection
 
 @push('scripts')
