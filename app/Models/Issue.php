@@ -20,6 +20,7 @@ class Issue extends Model
         'teams',
         'locations',
         'story_arc_credits',
+        'site_detail_url',
         'volume_id',
     ];
 

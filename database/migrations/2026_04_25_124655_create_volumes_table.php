@@ -17,6 +17,7 @@ return new class extends Migration
         $table->string('name');
         $table->longtext('description')->nullable();
         $table->text('cover_image')->nullable();
+        $table->text('site_detail_url')->nullable();
         $table->integer('count_of_issues')->nullable();
         $table->json('first_issue')->nullable();
         $table->json('last_issue')->nullable();

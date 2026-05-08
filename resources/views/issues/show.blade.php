@@ -26,6 +26,46 @@
                 <div class="w-48 h-64 bg-zinc-800 rounded-xl flex items-center justify-center text-zinc-600 text-5xl">📄</div>
             @endif
 
+            {{-- STREAMING PLATFORM REDIRECT --}}
+            @if($issue->site_detail_url)
+                @php
+                    $publisherName = strtolower($issue->volume->publisher->name ?? '');
+                    $issueQuery = urlencode(($issue->volume->name ?? '') . ' ' . ($issue->issue_number ?? ''));
+                    
+                    // Default Fallback
+                    $url = $issue->site_detail_url; 
+                    $label = "Comic Vine";
+                    $btnClass = 'bg-zinc-700 hover:bg-zinc-600';
+
+                    if (str_contains($publisherName, 'marvel')) {
+                        // Marvel Unlimited Search
+                        $url = "https://www.marvel.com/search?category=comic&options%5B0%5D=unlimited&query=" . $issueQuery;
+                        $label = "Marvel";
+                        $btnClass = 'bg-red-600 hover:bg-red-700';
+                    } elseif (str_contains($publisherName, 'dc comics')) {
+                        // DC Universe Infinite Search
+                        $url = "https://www.dcuniverseinfinite.com/";
+                        $label = "DC Universe";
+                        $btnClass = 'bg-blue-600 hover:bg-blue-700';
+                    } elseif (str_contains($publisherName, 'image')) {
+                        // Image Comics Digital Store
+                        $url = "https://imagecomics.com/";
+                        $label = "Image Comics";
+                        $btnClass = 'bg-zinc-100 text-black hover:bg-zinc-300';
+                    }
+                @endphp
+
+                <div class="w-full space-y-2 text-center">
+                    <a href="{{ $url }}" target="_blank" 
+                       class="w-full block text-center text-sm px-4 py-2 rounded-lg transition font-bold uppercase tracking-wider {{ $btnClass }} {{ !str_contains($publisherName, 'image') ? 'text-white' : '' }}">
+                        Read on {{ $label }}
+                    </a>
+                    <p class="text-[10px] text-zinc-500 italic leading-tight">
+                        You can also support your local comic shop
+                    </p>
+                </div>
+            @endif
+
             {{-- USER ACTIONS --}}
             @auth
                 @php

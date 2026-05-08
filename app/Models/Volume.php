@@ -17,6 +17,7 @@ class Volume extends Model
         'count_of_issues',
         'first_issue',
         'last_issue',
+        'site_detail_url',
         'publisher_id',
     ];
 

@@ -20,6 +20,7 @@ return new class extends Migration
         $table->text('image')->nullable();
         $table->date('cover_date')->nullable();
         $table->date('store_date')->nullable();
+        $table->text('site_detail_url')->nullable();
         $table->json('teams')->nullable();
         $table->json('locations')->nullable();
         $table->json('story_arc_credits')->nullable();

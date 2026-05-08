@@ -122,6 +122,7 @@ class ComicVineImportService
                     'count_of_issues' => $data['count_of_issues'] ?? null,
                     'first_issue'     => $data['first_issue'] ?? null,
                     'last_issue'      => $data['last_issue'] ?? null,
+                    'site_detail_url' => $data['site_detail_url'] ?? null,
                     'publisher_id'    => $publisherId,
                 ]
             );
@@ -154,6 +155,7 @@ class ComicVineImportService
                 'count_of_issues' => $data['count_of_issues'] ?? null,
                 'first_issue'     => $data['first_issue'] ?? null,
                 'last_issue'      => $data['last_issue'] ?? null,
+                'site_detail_url' => $data['site_detail_url'] ?? null,
                 'publisher_id'    => $publisherId,
             ]
         );
@@ -190,9 +192,10 @@ class ComicVineImportService
                     'image'             => $fullData['image']['original_url'] ?? null,
                     'cover_date'        => $fullData['cover_date'] ?? null,
                     'store_date'        => $fullData['store_date'] ?? null,
-                    'teams'             => $this->parseNameList($fullData['teams'] ?? []),
-                    'locations'         => $this->parseNameList($fullData['locations'] ?? []),
+                    'teams'             => $this->parseNameList($fullData['team_credits'] ?? []),
+                    'locations'         => $this->parseNameList($fullData['location_credits'] ?? []),
                     'story_arc_credits' => $this->parseNameList($fullData['story_arc_credits'] ?? []),
+                    'site_detail_url' => $fullData['site_detail_url'] ?? null,
                     'volume_id'         => $volume->id,
                 ]
             );
@@ -249,9 +252,10 @@ class ComicVineImportService
                 'image'             => $data['image']['original_url'] ?? null,
                 'cover_date'        => $data['cover_date'] ?? null,
                 'store_date'        => $data['store_date'] ?? null,
-                'teams'             => $this->parseNameList($data['teams'] ?? []),
-                'locations'         => $this->parseNameList($data['locations'] ?? []),
+                'teams'             => $this->parseNameList($data['team_credits'] ?? []),
+                'locations'         => $this->parseNameList($data['location_credits'] ?? []),
                 'story_arc_credits' => $this->parseNameList($data['story_arc_credits'] ?? []),
+                'site_detail_url' => $fullData['site_detail_url'] ?? null,
                 'volume_id'         => $volumeId,
             ]
         );
