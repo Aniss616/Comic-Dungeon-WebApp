@@ -33,21 +33,7 @@
 
         {{-- RECOMMENDATION SYSTEM / LOGIN CTA --}}
         @auth
-            {{-- Placeholder for recommendation system --}}
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-black text-zinc-100 uppercase tracking-widest">
-                        🎯 Recommended For You
-                    </h2>
-                    <span class="text-zinc-600 text-xs">Based on your reading history</span>
-                </div>
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center">
-                    <p class="text-zinc-600">Recommendations will appear here once you start reading and favouriting issues.</p>
-                    <a href="{{ route('explore') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
-                        Start exploring to build your history →
-                    </a>
-                </div>
-            </div>
+            @include('home.recommendations', ['recommendedIssues' => $recommendedIssues])
         @else
             {{-- Guest CTA --}}
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-10 text-center space-y-4">
