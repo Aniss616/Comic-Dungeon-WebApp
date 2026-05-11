@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-function initRain() {
+export function initRain() {
     const canvas = document.getElementById('rain-canvas');
     if (!canvas) return;
 
@@ -72,5 +72,3 @@ function initRain() {
         camera.updateProjectionMatrix();
     });
 }
-
-initRain();

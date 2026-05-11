@@ -321,7 +321,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 <script type="module">
-    import { initRain } from '/resources/js/rain.js';
+    import { initRain } from '{{ Vite::asset('resources/js/rain.js') }}';
 
     // ── CITY BACKGROUND ──────────────────────────────────────────
     (function initCity() {
@@ -329,15 +329,9 @@
         if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
-        let W, H;
+        let W = 0;
+        let H = 0;
 
-        function resize() {
-            W = canvas.width  = canvas.offsetWidth;
-            H = canvas.height = canvas.offsetHeight;
-            buildCity();
-        }
-
-        // Building data — regenerated on resize
         let buildings = [];
         let windows   = [];
 
@@ -346,29 +340,21 @@
             windows   = [];
 
             const buildingCount = Math.floor(W / 38);
-
             let x = 0;
+
             for (let i = 0; i < buildingCount; i++) {
                 const w = 28 + Math.random() * 55;
                 const h = 60 + Math.random() * (H * 0.72);
                 const y = H - h;
 
-                // Silhouette layers: main building + optional tower
                 buildings.push({ x, y, w, h });
 
-                // Add tower on some buildings
                 if (Math.random() > 0.6) {
                     const tw = 6 + Math.random() * 12;
                     const th = 20 + Math.random() * 60;
-                    buildings.push({
-                        x: x + w / 2 - tw / 2,
-                        y: y - th,
-                        w: tw,
-                        h: th,
-                    });
+                    buildings.push({ x: x + w / 2 - tw / 2, y: y - th, w: tw, h: th });
                 }
 
-                // Windows for this building
                 const cols = Math.floor(w / 10);
                 const rows = Math.floor(h / 14);
                 for (let col = 0; col < cols; col++) {
@@ -379,12 +365,10 @@
                                 y: y + 6 + row * 14,
                                 w: 5,
                                 h: 7,
-                                // lit windows flicker independently
-                                lit:       Math.random() > 0.4,
-                                flickerRate: 0.002 + Math.random() * 0.006,
+                                lit:          Math.random() > 0.4,
+                                flickerRate:  0.002 + Math.random() * 0.006,
                                 flickerOffset: Math.random() * Math.PI * 2,
-                                // amber or cool white
-                                warm: Math.random() > 0.5,
+                                warm:         Math.random() > 0.5,
                             });
                         }
                     }
@@ -395,13 +379,12 @@
             }
         }
 
-        // Fog / atmosphere layers
-        let fogOffset = 0;
-
         function draw(t) {
+            if (!W || !H || !isFinite(W) || !isFinite(H)) return;
+
             ctx.clearRect(0, 0, W, H);
 
-            // Sky gradient — stormy dark
+            // Sky
             const sky = ctx.createLinearGradient(0, 0, 0, H);
             sky.addColorStop(0,   '#05050A');
             sky.addColorStop(0.5, '#0A0A12');
@@ -409,7 +392,7 @@
             ctx.fillStyle = sky;
             ctx.fillRect(0, 0, W, H);
 
-            // Distant glow on horizon (red-amber — city light pollution)
+            // Horizon glow
             const glow = ctx.createRadialGradient(W * 0.5, H * 0.85, 0, W * 0.5, H * 0.85, W * 0.6);
             glow.addColorStop(0,   'rgba(160,40,20,0.18)');
             glow.addColorStop(0.5, 'rgba(100,20,10,0.06)');
@@ -417,8 +400,7 @@
             ctx.fillStyle = glow;
             ctx.fillRect(0, 0, W, H);
 
-            // Fog layer 1 — slow drift
-            fogOffset += 0.12;
+            // Fog layers
             ctx.save();
             ctx.globalAlpha = 0.06;
             for (let f = 0; f < 3; f++) {
@@ -431,45 +413,40 @@
             }
             ctx.restore();
 
-            // Buildings — silhouette
+            // Building silhouettes
             ctx.fillStyle = '#080810';
-            buildings.forEach(b => {
-                ctx.fillRect(b.x, b.y, b.w, b.h);
-            });
+            buildings.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
 
-            // Building edge highlights — faint blue rim from sky
+            // Building rim light
             ctx.strokeStyle = 'rgba(100,120,160,0.08)';
             ctx.lineWidth = 1;
-            buildings.forEach(b => {
-                ctx.strokeRect(b.x, b.y, b.w, b.h);
-            });
+            buildings.forEach(b => ctx.strokeRect(b.x, b.y, b.w, b.h));
 
             // Windows
             windows.forEach(win => {
                 if (!win.lit) return;
                 const flicker = Math.sin(t * win.flickerRate + win.flickerOffset);
-                // Occasionally turn off
                 if (flicker < -0.92) return;
                 const alpha = 0.45 + flicker * 0.2;
+
                 ctx.globalAlpha = Math.max(0.1, alpha);
-                ctx.fillStyle = win.warm ? '#D4832A' : '#9AB4CC';
+                ctx.fillStyle   = win.warm ? '#D4832A' : '#9AB4CC';
                 ctx.fillRect(win.x, win.y, win.w, win.h);
 
-                // Glow bloom around lit window
                 ctx.globalAlpha = alpha * 0.15;
-                ctx.fillStyle = win.warm ? '#D4832A' : '#7A99BB';
+                ctx.fillStyle   = win.warm ? '#D4832A' : '#7A99BB';
                 ctx.fillRect(win.x - 3, win.y - 3, win.w + 6, win.h + 6);
 
                 ctx.globalAlpha = 1;
             });
 
-            // Randomly flicker some windows on/off over time
+            // Random window flicker
             if (Math.random() < 0.008) {
                 const w = windows[Math.floor(Math.random() * windows.length)];
                 if (w) w.lit = !w.lit;
             }
 
-            // Ground reflection — wet pavement
+            // Ground reflection
             const ref = ctx.createLinearGradient(0, H * 0.88, 0, H);
             ref.addColorStop(0, 'rgba(160,40,20,0.08)');
             ref.addColorStop(1, 'rgba(0,0,0,0)');
@@ -483,16 +460,23 @@
             draw(t);
         }
 
-        buildCity();
-        loop(0);
+        function resize() {
+            W = canvas.width  = canvas.offsetWidth;
+            H = canvas.height = canvas.offsetHeight;
+            if (W > 0 && H > 0) buildCity();
+        }
+
+        // Resize first so W/H are valid before loop starts
+        window.addEventListener('resize', resize);
+        resize();
 
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) cancelAnimationFrame(animId);
             else loop(performance.now());
         });
 
-        window.addEventListener('resize', resize);
-        resize();
+        // Start loop only after resize has set valid dimensions
+        requestAnimationFrame(loop);
     })();
 
     // ── RAIN (home page only) ─────────────────────────────────────
@@ -512,7 +496,7 @@
         const closeBtn     = document.getElementById('modalClose');
         const rollAgainBtn = document.getElementById('modalRollAgain');
 
-        function openModal()  {
+        function openModal() {
             modal.style.display = 'flex';
             requestAnimationFrame(() => {
                 backdrop.style.opacity = '1';
@@ -560,8 +544,10 @@
             const aliasWrap = document.getElementById('modalAliasesWrap');
             const aliasEl   = document.getElementById('modalAliases');
             const aliases   = char.aliases;
-            if (aliases && aliases.length) { aliasEl.textContent = Array.isArray(aliases) ? aliases.join(', ') : aliases; aliasWrap.style.display = 'block'; }
-            else aliasWrap.style.display = 'none';
+            if (aliases && aliases.length) {
+                aliasEl.textContent      = Array.isArray(aliases) ? aliases.join(', ') : aliases;
+                aliasWrap.style.display  = 'block';
+            } else aliasWrap.style.display = 'none';
 
             const powersWrap = document.getElementById('modalPowersWrap');
             const powersEl   = document.getElementById('modalPowers');
@@ -571,7 +557,7 @@
                 powers.slice(0, 8).forEach(p => {
                     const label = typeof p === 'object' ? (p.name || '') : p;
                     const span  = document.createElement('span');
-                    span.className = 'badge badge-amber';
+                    span.className   = 'badge badge-amber';
                     span.textContent = label;
                     powersEl.appendChild(span);
                 });
@@ -587,14 +573,21 @@
             function issueCard(issue) {
                 if (!issue) return '<p style="font-size:12px; color:var(--sl-faint);">No issues linked.</p>';
                 const name  = (issue.name && issue.name !== 'TBD') ? ' &mdash; ' + issue.name : '';
-                const thumb = issue.image ? `<img src="${issue.image}" style="width:36px; height:50px; object-fit:cover; border-radius:3px; border:1px solid var(--sl-border-md); flex-shrink:0;" alt="">` : '';
-                return `<a href="/issues/${issue.id}" style="display:flex; align-items:center; gap:0.625rem; text-decoration:none;">
-                    ${thumb}
-                    <div>
-                        <p style="font-size:12px; font-weight:500; color:var(--sl-text); line-height:1.3; transition:color 0.15s;" onmouseover="this.style.color='var(--sl-red)'" onmouseout="this.style.color='var(--sl-text)'">${issue.volume_name ?? 'Unknown Volume'}</p>
-                        <p style="font-size:11px; color:var(--sl-muted); margin-top:1px;">#${issue.issue_number}${name}</p>
-                    </div>
-                </a>`;
+                const thumb = issue.image
+                    ? `<img src="${issue.image}" style="width:36px; height:50px; object-fit:cover; border-radius:3px; border:1px solid var(--sl-border-md); flex-shrink:0;" alt="">`
+                    : '';
+                return `
+                    <a href="/issues/${issue.id}" style="display:flex; align-items:center; gap:0.625rem; text-decoration:none;">
+                        ${thumb}
+                        <div>
+                            <p style="font-size:12px; font-weight:500; color:var(--sl-text); line-height:1.3; transition:color 0.15s;"
+                               onmouseover="this.style.color='var(--sl-red)'"
+                               onmouseout="this.style.color='var(--sl-text)'">
+                                ${issue.volume_name ?? 'Unknown Volume'}
+                            </p>
+                            <p style="font-size:11px; color:var(--sl-muted); margin-top:1px;">#${issue.issue_number}${name}</p>
+                        </div>
+                    </a>`;
             }
 
             document.getElementById('modalFirstAppearance').innerHTML = issueCard(data.first_appearance);
@@ -622,11 +615,13 @@
             }
         }
 
-        rollBtn.addEventListener('click',      () => { openModal(); rollCharacter(); });
+        rollBtn.addEventListener('click',     () => { openModal(); rollCharacter(); });
         rollAgainBtn.addEventListener('click',  rollCharacter);
         closeBtn.addEventListener('click',      closeModal);
         backdrop.addEventListener('click',      closeModal);
-        document.addEventListener('keydown',    e => { if (e.key === 'Escape' && modal.style.display !== 'none') closeModal(); });
+        document.addEventListener('keydown',    e => {
+            if (e.key === 'Escape' && modal.style.display !== 'none') closeModal();
+        });
     })();
 </script>
 @endpush
