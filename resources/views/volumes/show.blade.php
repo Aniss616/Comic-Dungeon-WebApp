@@ -7,187 +7,351 @@
 <div class="space-y-8">
 
     {{-- BACK --}}
-    <a href="{{ route('explore') }}?tab=volumes" class="text-zinc-500 hover:text-yellow-400 text-sm transition">
-        ← Back to Volumes
+    <a href="{{ route('explore') }}?tab=volumes"
+       class="section-link">
+        Back to Volumes
     </a>
 
     {{-- HERO --}}
-    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col md:flex-row gap-8">
+    <div class="card" style="padding:2rem;">
+        <div class="flex flex-wrap gap-2" style="gap:2rem; align-items:flex-start;">
 
-        {{-- COVER --}}
-        <div class="flex-shrink-0">
-            @if ($volume->cover_image)
-                <img
-                    src="{{ $volume->cover_image }}"
-                    alt="{{ $volume->name }}"
-                    class="w-48 object-cover rounded-xl border border-zinc-700"
-                />
-            @else
-                <div class="w-48 h-64 bg-zinc-800 rounded-xl flex items-center justify-center text-zinc-600 text-5xl">📚</div>
-            @endif
-        </div>
+            {{-- COVER --}}
+            <div style="width:220px; flex-shrink:0;">
 
-        {{-- INFO --}}
-        <div class="flex-1 space-y-5">
+                @if ($volume->cover_image)
 
-            {{-- TITLE --}}
-            <div>
-                <p class="text-zinc-500 text-xs uppercase tracking-widest mb-1">Volume</p>
-                <h1 class="text-4xl font-black text-yellow-400 uppercase tracking-widest leading-tight">
+                    <img
+                        src="{{ $volume->cover_image }}"
+                        alt="{{ $volume->name }}"
+                        style="
+                            width:100%;
+                            border-radius:var(--sl-radius-lg);
+                            border:1px solid var(--sl-border-md);
+                            background:var(--sl-surface);
+                            object-fit:cover;
+                        "
+                    />
+
+                @else
+
+                    <div style="
+                        width:100%;
+                        aspect-ratio:2/3;
+                        border-radius:var(--sl-radius-lg);
+                        border:1px solid var(--sl-border);
+                        background:var(--sl-surface);
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-family:var(--font-display);
+                        font-size:2rem;
+                        letter-spacing:0.08em;
+                        color:var(--sl-faint);
+                    ">
+                        VOLUME
+                    </div>
+
+                @endif
+
+            </div>
+
+            {{-- INFO --}}
+            <div style="flex:1; min-width:300px;">
+
+                <span class="page-header-eyebrow">
+                    Volume
+                </span>
+
+                <h1 class="page-header-title"
+                    style="font-size:clamp(2.5rem,5vw,4rem);">
                     {{ $volume->name }}
                 </h1>
+
                 @if ($volume->publisher)
-                    <p class="text-zinc-400 text-sm mt-1">
+                    <p class="page-header-sub">
                         Published by
-                        <span class="text-zinc-200 font-semibold">{{ $volume->publisher->name }}</span>
+                        <span style="color:var(--sl-text); font-weight:600;">
+                            {{ $volume->publisher->name }}
+                        </span>
+
                         @if ($volume->publisher->location_city)
                             · {{ $volume->publisher->location_city }}
+
                             @if ($volume->publisher->location_country)
                                 , {{ $volume->publisher->location_country }}
                             @endif
                         @endif
                     </p>
                 @endif
-            </div>
 
-            {{-- STATS --}}
-            <div class="flex flex-wrap gap-3">
-                <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                    <p class="text-yellow-400 font-black text-2xl">
-                        {{ $volume->count_of_issues ?? $volume->issues->count() }}
-                    </p>
-                    <p class="text-zinc-500 text-xs uppercase tracking-wider mt-0.5">Total Issues</p>
-                </div>
-                <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                    <p class="text-yellow-400 font-black text-2xl">
-                        {{ $volume->issues->count() }}
-                    </p>
-                    <p class="text-zinc-500 text-xs uppercase tracking-wider mt-0.5">Imported</p>
-                </div>
-                @if ($volume->first_issue)
-                    <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">First Issue</p>
-                        <p class="text-zinc-100 font-black text-lg">#{{ $volume->first_issue['issue_number'] ?? '?' }}</p>
+                {{-- STATS --}}
+                <div class="flex flex-wrap gap-2 mt-4">
+
+                    <div class="card"
+                         style="padding:1rem 1.4rem; min-width:140px; text-align:center;">
+                        <div class="stat-number">
+                            {{ $volume->count_of_issues ?? $volume->issues->count() }}
+                        </div>
+                        <div class="stat-label">
+                            Total Issues
+                        </div>
                     </div>
-                @endif
-                @if ($volume->last_issue)
-                    <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Last Issue</p>
-                        <p class="text-zinc-100 font-black text-lg">#{{ $volume->last_issue['issue_number'] ?? '?' }}</p>
+
+                    <div class="card"
+                         style="padding:1rem 1.4rem; min-width:140px; text-align:center;">
+                        <div class="stat-number">
+                            {{ $volume->issues->count() }}
+                        </div>
+                        <div class="stat-label">
+                            Imported
+                        </div>
                     </div>
-                @endif
+
+                    @if ($volume->first_issue)
+                        <div class="card"
+                             style="padding:1rem 1.4rem; min-width:140px; text-align:center;">
+                            <div class="stat-label mb-1">
+                                First Issue
+                            </div>
+
+                            <div style="
+                                font-family:var(--font-display);
+                                font-size:1.8rem;
+                                font-weight:800;
+                                color:var(--sl-text);
+                                line-height:1;
+                            ">
+                                #{{ $volume->first_issue['issue_number'] ?? '?' }}
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($volume->last_issue)
+                        <div class="card"
+                             style="padding:1rem 1.4rem; min-width:140px; text-align:center;">
+                            <div class="stat-label mb-1">
+                                Last Issue
+                            </div>
+
+                            <div style="
+                                font-family:var(--font-display);
+                                font-size:1.8rem;
+                                font-weight:800;
+                                color:var(--sl-text);
+                                line-height:1;
+                            ">
+                                #{{ $volume->last_issue['issue_number'] ?? '?' }}
+                            </div>
+                        </div>
+                    @endif
+
+                </div>
+
             </div>
 
         </div>
     </div>
 
-    {{-- DESCRIPTION SECTIONS --}}
+    {{-- DESCRIPTION --}}
     @if (count($descriptionSections) > 0)
-        <div class="space-y-4">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest">📋 About</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach ($descriptionSections as $index => $section)
-                    @php
-                        $accents = [
-                            'border-yellow-400/40 bg-yellow-400/5',
-                            'border-blue-400/40 bg-blue-400/5',
-                            'border-purple-400/40 bg-purple-400/5',
-                            'border-green-400/40 bg-green-400/5',
-                            'border-red-400/40 bg-red-400/5',
-                            'border-orange-400/40 bg-orange-400/5',
-                            'border-pink-400/40 bg-pink-400/5',
-                            'border-cyan-400/40 bg-cyan-400/5',
-                        ];
-                        $titleColors = [
-                            'text-yellow-400',
-                            'text-blue-400',
-                            'text-purple-400',
-                            'text-green-400',
-                            'text-red-400',
-                            'text-orange-400',
-                            'text-pink-400',
-                            'text-cyan-400',
-                        ];
-                        $accent     = $accents[$index % count($accents)];
-                        $titleColor = $titleColors[$index % count($titleColors)];
-                    @endphp
-                    <div class="border {{ $accent }} rounded-2xl p-5 relative overflow-hidden hover:scale-[1.01] transition duration-200">
-                        <div class="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-bl-full {{ str_replace(['border-', '/40'], ['bg-', ''], explode(' ', $accent)[0]) }}"></div>
+
+        <div>
+
+            <div class="section-heading">
+                <h2 class="section-title">About</h2>
+                <div class="section-rule"></div>
+            </div>
+
+            <div class="grid-2">
+
+                @foreach ($descriptionSections as $section)
+
+                    <div class="card"
+                         style="padding:1.5rem;">
+
                         @if ($section['title'])
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="w-1 h-4 rounded-full {{ str_replace('text-', 'bg-', $titleColor) }}"></div>
-                                <p class="{{ $titleColor }} text-xs font-black uppercase tracking-widest">
-                                    {{ $section['title'] }}
-                                </p>
+                            <div class="badge badge-red mb-2">
+                                {{ $section['title'] }}
                             </div>
                         @endif
-                        <p class="text-zinc-300 text-sm leading-relaxed">
+
+                        <p class="text-muted"
+                           style="line-height:1.8;">
                             {{ Str::limit($section['content'], 300) }}
                         </p>
+
                         @if (strlen($section['content']) > 300)
+
                             <button
                                 onclick="toggleSection(this)"
                                 data-full="{{ e($section['content']) }}"
                                 data-short="{{ e(Str::limit($section['content'], 300)) }}"
-                                class="{{ $titleColor }} text-xs hover:underline mt-2 block font-semibold">
+                                class="section-link mt-2"
+                                style="
+                                    background:none;
+                                    border:none;
+                                    cursor:pointer;
+                                ">
                                 Read more
                             </button>
+
                         @endif
+
                     </div>
+
                 @endforeach
+
             </div>
+
         </div>
+
     @endif
 
-    {{-- ISSUES LIST --}}
+    {{-- ISSUES --}}
     @if ($volume->issues->count() > 0)
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                📄 Issues
-                <span class="text-zinc-600 font-normal text-sm ml-2">({{ $volume->issues->count() }} imported)</span>
-            </h3>
-            <div class="space-y-2">
-                @foreach ($volume->issues as $issue)
-                    <a href="{{ route('issues.show', $issue->id) }}"
-                       class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 transition group">
-                        @if ($issue->image)
-                            <img src="{{ $issue->image }}" alt="{{ $issue->name }}"
-                                 class="w-10 h-14 object-cover object-top rounded flex-shrink-0"/>
-                        @else
-                            <div class="w-10 h-14 bg-zinc-700 rounded flex items-center justify-center text-zinc-500 text-xs flex-shrink-0">N/A</div>
-                        @endif
-                        <div class="flex-1 min-w-0">
-                            <p class="text-zinc-100 font-semibold text-sm group-hover:text-yellow-400 transition truncate">
-                                {{ $issue->name ?? 'Untitled' }}
-                            </p>
-                            <p class="text-zinc-500 text-xs mt-0.5">
-                                #{{ $issue->issue_number ?? '?' }}
-                                @if ($issue->cover_date) · {{ $issue->cover_date }} @endif
-                                @if ($issue->store_date) · On Sale: {{ $issue->store_date }} @endif
-                            </p>
-                        </div>
-                        @auth
-                            @php $isRead = Auth::user()->reads()->where('issue_id', $issue->id)->exists(); @endphp
-                            <span class="text-xs flex-shrink-0 {{ $isRead ? 'text-green-400' : 'text-zinc-600' }}">
-                                {{ $isRead ? '✅ Read' : '○ Unread' }}
-                            </span>
-                        @endauth
-                        <span class="text-zinc-700 group-hover:text-yellow-400 transition">→</span>
-                    </a>
-                @endforeach
+
+        <div>
+
+            <div class="section-heading">
+                <h2 class="section-title">
+                    Issues
+                </h2>
+
+                <div class="section-rule"></div>
+
+                <span class="text-faint"
+                      style="
+                        font-family:var(--font-display);
+                        font-size:0.8rem;
+                        letter-spacing:0.08em;
+                        text-transform:uppercase;
+                      ">
+                    {{ $volume->issues->count() }} Imported
+                </span>
             </div>
+
+            <div class="card"
+                 style="padding:1rem;">
+
+                <div class="space-y-2">
+
+                    @foreach ($volume->issues as $issue)
+
+                        <a href="{{ route('issues.show', $issue->id) }}"
+                           class="char-card"
+                           style="
+                                border-radius:var(--sl-radius);
+                                padding:0.85rem 1rem;
+                           ">
+
+                            {{-- COVER --}}
+                            @if ($issue->image)
+
+                                <img
+                                    src="{{ $issue->image }}"
+                                    alt="{{ $issue->name }}"
+                                    style="
+                                        width:42px;
+                                        height:60px;
+                                        object-fit:cover;
+                                        object-position:top;
+                                        border-radius:4px;
+                                        border:1px solid var(--sl-border);
+                                        flex-shrink:0;
+                                    "
+                                />
+
+                            @else
+
+                                <div style="
+                                    width:42px;
+                                    height:60px;
+                                    border-radius:4px;
+                                    background:var(--sl-surface);
+                                    border:1px solid var(--sl-border);
+                                    display:flex;
+                                    align-items:center;
+                                    justify-content:center;
+                                    font-size:10px;
+                                    color:var(--sl-faint);
+                                    flex-shrink:0;
+                                ">
+                                    ISSUE
+                                </div>
+
+                            @endif
+
+                            {{-- INFO --}}
+                            <div class="char-info">
+
+                                <div class="char-name">
+                                    {{ $issue->name ?? 'Untitled' }}
+                                </div>
+
+                                <div class="char-meta">
+                                    #{{ $issue->issue_number ?? '?' }}
+
+                                    @if ($issue->cover_date)
+                                        · {{ $issue->cover_date }}
+                                    @endif
+
+                                    @if ($issue->store_date)
+                                        · On Sale: {{ $issue->store_date }}
+                                    @endif
+                                </div>
+
+                            </div>
+
+                            {{-- STATUS --}}
+                            @auth
+
+                                @php
+                                    $isRead = Auth::user()
+                                        ->reads()
+                                        ->where('issue_id', $issue->id)
+                                        ->exists();
+                                @endphp
+
+                                <span class="badge {{ $isRead ? 'badge-amber' : 'badge-neutral' }}">
+                                    {{ $isRead ? 'Read' : 'Unread' }}
+                                </span>
+
+                            @endauth
+
+                        </a>
+
+                    @endforeach
+
+                </div>
+
+            </div>
+
         </div>
+
     @else
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center">
-            <p class="text-zinc-600">No issues imported for this volume yet.</p>
+
+        <div class="card"
+             style="padding:2rem; text-align:center;">
+
+            <p class="text-muted">
+                No issues imported for this volume yet.
+            </p>
+
             @auth
                 @if(Auth::user()->is_admin)
-                    <a href="{{ route('dashboard') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
+
+                    <a href="{{ route('dashboard') }}"
+                       class="section-link"
+                       style="display:inline-block; margin-top:1rem;">
                         Import issues from dashboard
                     </a>
+
                 @endif
             @endauth
+
         </div>
+
     @endif
 
 </div>
@@ -197,10 +361,21 @@
 @push('scripts')
 <script>
     function toggleSection(btn) {
-        const p      = btn.previousElementSibling;
-        const isFull = btn.textContent.trim() === 'Read less';
-        p.textContent = isFull ? btn.dataset.short : btn.dataset.full;
-        btn.textContent = isFull ? 'Read more' : 'Read less';
+
+        const p = btn.previousElementSibling;
+
+        const isFull =
+            btn.textContent.trim() === 'Read less';
+
+        p.textContent =
+            isFull
+                ? btn.dataset.short
+                : btn.dataset.full;
+
+        btn.textContent =
+            isFull
+                ? 'Read more'
+                : 'Read less';
     }
 </script>
 @endpush

@@ -7,296 +7,580 @@
 <div class="space-y-8">
 
     {{-- BACK --}}
-    <a href="{{ route('volumes.show', $issue->volume_id) }}" class="text-zinc-500 hover:text-yellow-400 text-sm transition">
-        ← Back to {{ $issue->volume->name ?? 'Volume' }}
+    <a href="{{ route('volumes.show', $issue->volume_id) }}"
+       class="section-link">
+        Back to {{ $issue->volume->name ?? 'Volume' }}
     </a>
 
     {{-- HERO --}}
-    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col md:flex-row gap-8">
+    <div class="card" style="padding:2rem;">
 
-        {{-- COVER --}}
-        <div class="flex-shrink-0 flex flex-col items-center gap-4">
-            @if ($issue->image)
-                <img
-                    src="{{ $issue->image }}"
-                    alt="{{ $issue->name }}"
-                    class="w-48 object-cover rounded-xl border border-zinc-700"
-                />
-            @else
-                <div class="w-48 h-64 bg-zinc-800 rounded-xl flex items-center justify-center text-zinc-600 text-5xl">📄</div>
-            @endif
+        <div class="flex flex-wrap gap-2"
+             style="gap:2rem; align-items:flex-start;">
 
-            {{-- STREAMING PLATFORM REDIRECT --}}
-            @if($issue->site_detail_url)
-                @php
-                    $publisherName = strtolower($issue->volume->publisher->name ?? '');
-                    $issueQuery = urlencode(($issue->volume->name ?? '') . ' ' . ($issue->issue_number ?? ''));
-                    
-                    // Default Fallback
-                    $url = $issue->site_detail_url; 
-                    $label = "Comic Vine";
-                    $btnClass = 'bg-zinc-700 hover:bg-zinc-600';
+            {{-- COVER --}}
+            <div style="width:220px; flex-shrink:0;">
 
-                    if (str_contains($publisherName, 'marvel')) {
-                        // Marvel Unlimited Search
-                        $url = "https://www.marvel.com/search?category=comic&options%5B0%5D=unlimited&query=" . $issueQuery;
-                        $label = "Marvel";
-                        $btnClass = 'bg-red-600 hover:bg-red-700';
-                    } elseif (str_contains($publisherName, 'dc comics')) {
-                        // DC Universe Infinite Search
-                        $url = "https://www.dcuniverseinfinite.com/";
-                        $label = "DC Universe";
-                        $btnClass = 'bg-blue-600 hover:bg-blue-700';
-                    } elseif (str_contains($publisherName, 'image')) {
-                        // Image Comics Digital Store
-                        $url = "https://imagecomics.com/";
-                        $label = "Image Comics";
-                        $btnClass = 'bg-zinc-100 text-black hover:bg-zinc-300';
-                    }
-                @endphp
+                @if ($issue->image)
 
-                <div class="w-full space-y-2 text-center">
-                    <a href="{{ $url }}" target="_blank" 
-                       class="w-full block text-center text-sm px-4 py-2 rounded-lg transition font-bold uppercase tracking-wider {{ $btnClass }} {{ !str_contains($publisherName, 'image') ? 'text-white' : '' }}">
-                        Read on {{ $label }}
+                    <img
+                        src="{{ $issue->image }}"
+                        alt="{{ $issue->name }}"
+                        style="
+                            width:100%;
+                            border-radius:var(--sl-radius-lg);
+                            border:1px solid var(--sl-border-md);
+                            object-fit:cover;
+                            background:var(--sl-surface);
+                        "
+                    />
+
+                @else
+
+                    <div style="
+                        width:100%;
+                        aspect-ratio:2/3;
+                        border-radius:var(--sl-radius-lg);
+                        border:1px solid var(--sl-border);
+                        background:var(--sl-surface);
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-family:var(--font-display);
+                        font-size:2rem;
+                        letter-spacing:0.08em;
+                        color:var(--sl-faint);
+                    ">
+                        ISSUE
+                    </div>
+
+                @endif
+
+                {{-- STREAMING --}}
+                @if($issue->site_detail_url)
+
+                    @php
+                        $publisherName = strtolower($issue->volume->publisher->name ?? '');
+                        $issueQuery = urlencode(($issue->volume->name ?? '') . ' ' . ($issue->issue_number ?? ''));
+
+                        $url = $issue->site_detail_url;
+                        $label = "Comic Vine";
+                        $btnClass = 'btn btn-ghost';
+
+                        if (str_contains($publisherName, 'marvel')) {
+                            $url = "https://www.marvel.com/search?category=comic&options%5B0%5D=unlimited&query=" . $issueQuery;
+                            $label = "Marvel";
+                            $btnClass = 'btn btn-primary';
+                        } elseif (str_contains($publisherName, 'dc comics')) {
+                            $url = "https://www.dcuniverseinfinite.com/";
+                            $label = "DC Universe";
+                            $btnClass = 'btn btn-primary';
+                        } elseif (str_contains($publisherName, 'image')) {
+                            $url = "https://imagecomics.com/";
+                            $label = "Image Comics";
+                            $btnClass = 'btn btn-ghost';
+                        }
+                    @endphp
+
+                    <div class="mt-2">
+                        <a href="{{ $url }}"
+                           target="_blank"
+                           class="{{ $btnClass }}"
+                           style="
+                                width:100%;
+                                justify-content:center;
+                                display:flex;
+                           ">
+                            Read on {{ $label }}
+                        </a>
+
+                        <p class="text-faint mt-1"
+                           style="
+                                font-size:11px;
+                                text-align:center;
+                                line-height:1.5;
+                           ">
+                            Support your local comic shop
+                        </p>
+                    </div>
+
+                @endif
+
+                {{-- USER ACTIONS --}}
+                @auth
+
+                    @php
+                        $isRead = Auth::user()
+                            ->reads()
+                            ->where('issue_id', $issue->id)
+                            ->exists();
+
+                        $isFavourite = Auth::user()
+                            ->favourites()
+                            ->where('issue_id', $issue->id)
+                            ->exists();
+                    @endphp
+
+                    <div class="mt-2 flex flex-wrap"
+                         style="gap:0.75rem;">
+
+                        <button
+                            id="readBtn"
+                            onclick="toggleRead({{ $issue->id }})"
+                            class="btn {{ $isRead ? 'btn-primary' : 'btn-ghost' }}"
+                            style="
+                                width:100%;
+                                justify-content:center;
+                            ">
+                            {{ $isRead ? 'Read' : 'Mark as Read' }}
+                        </button>
+
+                        <button
+                            id="favBtn"
+                            onclick="toggleFavouriteIssue({{ $issue->id }})"
+                            class="btn {{ $isFavourite ? 'btn-primary' : 'btn-ghost' }}"
+                            style="
+                                width:100%;
+                                justify-content:center;
+                            ">
+                            {{ $isFavourite ? 'Favourited' : 'Favourite' }}
+                        </button>
+
+                    </div>
+
+                @else
+
+                    <a href="{{ route('login') }}"
+                       class="section-link"
+                       style="display:block; margin-top:1rem;">
+                        Sign in to track this issue
                     </a>
-                    <p class="text-[10px] text-zinc-500 italic leading-tight">
-                        You can also support your local comic shop
-                    </p>
-                </div>
-            @endif
 
-            {{-- USER ACTIONS --}}
-            @auth
-                @php
-                    $isRead      = Auth::user()->reads()->where('issue_id', $issue->id)->exists();
-                    $isFavourite = Auth::user()->favourites()->where('issue_id', $issue->id)->exists();
-                @endphp
-                <button
-                    id="readBtn"
-                    onclick="toggleRead({{ $issue->id }})"
-                    class="w-full text-sm px-4 py-2 rounded-lg transition font-semibold
-                        {{ $isRead ? 'bg-green-500 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' }}">
-                    {{ $isRead ? '✅ Read' : '☐ Mark as Read' }}
-                </button>
-                <button
-                    id="favBtn"
-                    onclick="toggleFavouriteIssue({{ $issue->id }})"
-                    class="w-full text-sm px-4 py-2 rounded-lg transition font-semibold
-                        {{ $isFavourite ? 'bg-red-500 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' }}">
-                    {{ $isFavourite ? '❤️ Favourited' : '🤍 Favourite' }}
-                </button>
-            @else
-                <a href="{{ route('login') }}" class="text-yellow-400 text-xs hover:underline">
-                    Login to track this issue
-                </a>
-            @endauth
-        </div>
+                @endauth
 
-        {{-- INFO --}}
-        <div class="flex-1 space-y-5">
+            </div>
 
-            {{-- TITLE --}}
-            <div>
-                <p class="text-zinc-500 text-xs uppercase tracking-widest mb-1">
+            {{-- INFO --}}
+            <div style="flex:1; min-width:320px;">
+
+                <span class="page-header-eyebrow">
+
                     @if ($issue->volume)
-                        <a href="{{ route('volumes.show', $issue->volume->id) }}" class="hover:text-yellow-400 transition">
+
+                        <a href="{{ route('volumes.show', $issue->volume->id) }}"
+                           style="color:inherit; text-decoration:none;">
                             {{ $issue->volume->name }}
                         </a>
+
                         @if ($issue->volume->publisher)
                             · {{ $issue->volume->publisher->name }}
                         @endif
+
                     @endif
-                </p>
-                <h1 class="text-4xl font-black text-yellow-400 uppercase tracking-widest leading-tight">
+
+                </span>
+
+                <h1 class="page-header-title"
+                    style="font-size:clamp(2.5rem,5vw,4rem);">
                     {{ $issue->name ?? 'Untitled' }}
                 </h1>
-                <p class="text-zinc-400 text-sm mt-1">
-                    Issue <span class="text-zinc-200 font-semibold">#{{ $issue->issue_number ?? '?' }}</span>
+
+                <p class="page-header-sub">
+                    Issue
+                    <span style="color:var(--sl-text); font-weight:600;">
+                        #{{ $issue->issue_number ?? '?' }}
+                    </span>
                 </p>
-            </div>
 
-            {{-- DATES --}}
-            <div class="flex flex-wrap gap-3">
-                @if ($issue->cover_date)
-                    <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Cover Date</p>
-                        <p class="text-zinc-100 font-black text-lg">{{ $issue->cover_date }}</p>
+                {{-- STATS --}}
+                <div class="flex flex-wrap gap-2 mt-4">
+
+                    @if ($issue->cover_date)
+
+                        <div class="card"
+                             style="
+                                padding:1rem 1.3rem;
+                                min-width:150px;
+                                text-align:center;
+                             ">
+
+                            <div class="stat-label mb-1">
+                                Cover Date
+                            </div>
+
+                            <div style="
+                                font-family:var(--font-display);
+                                font-size:1.35rem;
+                                font-weight:800;
+                                color:var(--sl-text);
+                            ">
+                                {{ $issue->cover_date }}
+                            </div>
+
+                        </div>
+
+                    @endif
+
+                    @if ($issue->store_date)
+
+                        <div class="card"
+                             style="
+                                padding:1rem 1.3rem;
+                                min-width:150px;
+                                text-align:center;
+                             ">
+
+                            <div class="stat-label mb-1">
+                                Store Date
+                            </div>
+
+                            <div style="
+                                font-family:var(--font-display);
+                                font-size:1.35rem;
+                                font-weight:800;
+                                color:var(--sl-text);
+                            ">
+                                {{ $issue->store_date }}
+                            </div>
+
+                        </div>
+
+                    @endif
+
+                    <div class="card"
+                         style="
+                            padding:1rem 1.3rem;
+                            min-width:140px;
+                            text-align:center;
+                         ">
+
+                        <div class="stat-number">
+                            {{ $issue->characters->count() }}
+                        </div>
+
+                        <div class="stat-label">
+                            Characters
+                        </div>
+
                     </div>
+
+                    <div class="card"
+                         style="
+                            padding:1rem 1.3rem;
+                            min-width:140px;
+                            text-align:center;
+                         ">
+
+                        <div class="stat-number">
+                            {{ $issue->people->count() }}
+                        </div>
+
+                        <div class="stat-label">
+                            Credits
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {{-- STORY ARCS --}}
+                @if ($issue->story_arc_credits && count($issue->story_arc_credits) > 0)
+
+                    <div class="mt-4">
+
+                        <div class="section-heading"
+                             style="margin-bottom:1rem;">
+
+                            <h3 class="section-title"
+                                style="font-size:1rem;">
+                                Story Arcs
+                            </h3>
+
+                            <div class="section-rule"></div>
+
+                        </div>
+
+                        <div class="flex flex-wrap gap-1">
+
+                            @foreach ($issue->story_arc_credits as $arc)
+
+                                <span class="badge badge-red">
+                                    {{ $arc['name'] }}
+                                </span>
+
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
                 @endif
-                @if ($issue->store_date)
-                    <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Store Date</p>
-                        <p class="text-zinc-100 font-black text-lg">{{ $issue->store_date }}</p>
+
+                {{-- TEAMS --}}
+                @if ($issue->teams && count($issue->teams) > 0)
+
+                    <div class="mt-4">
+
+                        <div class="section-heading"
+                             style="margin-bottom:1rem;">
+
+                            <h3 class="section-title"
+                                style="font-size:1rem;">
+                                Teams
+                            </h3>
+
+                            <div class="section-rule"></div>
+
+                        </div>
+
+                        <div class="flex flex-wrap gap-1">
+
+                            @foreach ($issue->teams as $team)
+
+                                <span class="badge badge-neutral">
+                                    {{ $team['name'] }}
+                                </span>
+
+                            @endforeach
+
+                        </div>
+
                     </div>
+
                 @endif
-                <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                    <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Characters</p>
-                    <p class="text-zinc-100 font-black text-lg">{{ $issue->characters->count() }}</p>
-                </div>
-                <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-5 py-3 text-center">
-                    <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Credits</p>
-                    <p class="text-zinc-100 font-black text-lg">{{ $issue->people->count() }}</p>
-                </div>
+
+                {{-- LOCATIONS --}}
+                @if ($issue->locations && count($issue->locations) > 0)
+
+                    <div class="mt-4">
+
+                        <div class="section-heading"
+                             style="margin-bottom:1rem;">
+
+                            <h3 class="section-title"
+                                style="font-size:1rem;">
+                                Locations
+                            </h3>
+
+                            <div class="section-rule"></div>
+
+                        </div>
+
+                        <div class="flex flex-wrap gap-1">
+
+                            @foreach ($issue->locations as $location)
+
+                                <span class="badge badge-amber">
+                                    {{ $location['name'] }}
+                                </span>
+
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
+                @endif
+
             </div>
-
-            {{-- STORY ARCS --}}
-            @if ($issue->story_arc_credits && count($issue->story_arc_credits) > 0)
-                <div>
-                    <p class="text-zinc-500 text-xs uppercase tracking-wider mb-2">📖 Story Arcs</p>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($issue->story_arc_credits as $arc)
-                            <span class="bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs px-3 py-1.5 rounded-full font-semibold">
-                                {{ $arc['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            {{-- TEAMS --}}
-            @if ($issue->teams && count($issue->teams) > 0)
-                <div>
-                    <p class="text-zinc-500 text-xs uppercase tracking-wider mb-2">🛡️ Teams</p>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($issue->teams as $team)
-                            <span class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-full">
-                                {{ $team['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            {{-- LOCATIONS --}}
-            @if ($issue->locations && count($issue->locations) > 0)
-                <div>
-                    <p class="text-zinc-500 text-xs uppercase tracking-wider mb-2">📍 Locations</p>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($issue->locations as $location)
-                            <span class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-full">
-                                {{ $location['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
 
         </div>
+
     </div>
 
-    {{-- DESCRIPTION SECTIONS --}}
+    {{-- STORY --}}
     @if (count($descriptionSections) > 0)
-        <div class="space-y-4">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest">📋 Story</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach ($descriptionSections as $index => $section)
-                    @php
-                        $accents = [
-                            'border-yellow-400/40 bg-yellow-400/5',
-                            'border-blue-400/40 bg-blue-400/5',
-                            'border-purple-400/40 bg-purple-400/5',
-                            'border-green-400/40 bg-green-400/5',
-                            'border-red-400/40 bg-red-400/5',
-                            'border-orange-400/40 bg-orange-400/5',
-                            'border-pink-400/40 bg-pink-400/5',
-                            'border-cyan-400/40 bg-cyan-400/5',
-                        ];
-                        $titleColors = [
-                            'text-yellow-400',
-                            'text-blue-400',
-                            'text-purple-400',
-                            'text-green-400',
-                            'text-red-400',
-                            'text-orange-400',
-                            'text-pink-400',
-                            'text-cyan-400',
-                        ];
-                        $accent     = $accents[$index % count($accents)];
-                        $titleColor = $titleColors[$index % count($titleColors)];
-                    @endphp
-                    <div class="border {{ $accent }} rounded-2xl p-5 relative overflow-hidden hover:scale-[1.01] transition duration-200">
-                        <div class="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-bl-full {{ str_replace(['border-', '/40'], ['bg-', ''], explode(' ', $accent)[0]) }}"></div>
+
+        <div>
+
+            <div class="section-heading">
+                <h2 class="section-title">Story</h2>
+                <div class="section-rule"></div>
+            </div>
+
+            <div class="grid-2">
+
+                @foreach ($descriptionSections as $section)
+
+                    <div class="card"
+                         style="padding:1.5rem;">
+
                         @if ($section['title'])
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="w-1 h-4 rounded-full {{ str_replace('text-', 'bg-', $titleColor) }}"></div>
-                                <p class="{{ $titleColor }} text-xs font-black uppercase tracking-widest">
-                                    {{ $section['title'] }}
-                                </p>
+
+                            <div class="badge badge-red mb-2">
+                                {{ $section['title'] }}
                             </div>
+
                         @endif
-                        <p class="text-zinc-300 text-sm leading-relaxed">
+
+                        <p class="text-muted"
+                           style="line-height:1.8;">
+
                             {{ Str::limit($section['content'], 300) }}
+
                         </p>
+
                         @if (strlen($section['content']) > 300)
+
                             <button
                                 onclick="toggleSection(this)"
                                 data-full="{{ e($section['content']) }}"
                                 data-short="{{ e(Str::limit($section['content'], 300)) }}"
-                                class="{{ $titleColor }} text-xs hover:underline mt-2 block font-semibold">
+                                class="section-link mt-2"
+                                style="
+                                    background:none;
+                                    border:none;
+                                    cursor:pointer;
+                                ">
                                 Read more
                             </button>
+
                         @endif
+
                     </div>
+
                 @endforeach
+
             </div>
+
         </div>
+
     @endif
 
     {{-- CHARACTERS --}}
     @if ($issue->characters->count() > 0)
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                🦸 Characters
-                <span class="text-zinc-600 font-normal text-sm ml-2">({{ $issue->characters->count() }})</span>
-            </h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+
+        <div>
+
+            <div class="section-heading">
+
+                <h2 class="section-title">
+                    Characters
+                </h2>
+
+                <div class="section-rule"></div>
+
+                <span class="text-faint"
+                      style="
+                        font-family:var(--font-display);
+                        font-size:0.8rem;
+                        letter-spacing:0.08em;
+                        text-transform:uppercase;
+                      ">
+                    {{ $issue->characters->count() }}
+                </span>
+
+            </div>
+
+            <div class="grid-5">
+
                 @foreach ($issue->characters as $character)
+
                     <a href="{{ route('characters.show', $character->id) }}"
-                       class="bg-zinc-800 hover:bg-zinc-700 rounded-xl overflow-hidden transition group border border-zinc-700 hover:border-yellow-400">
-                        <div class="aspect-square overflow-hidden bg-zinc-700">
+                       class="cover-card">
+
+                        <div class="cover-card-img"
+                             style="aspect-ratio:1/1;">
+
                             @if ($character->image)
+
                                 <img
                                     src="{{ $character->image }}"
                                     alt="{{ $character->name }}"
-                                    class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
                                 />
+
                             @else
-                                <div class="w-full h-full flex items-center justify-center text-zinc-600 text-2xl">?</div>
+
+                                <div class="cover-card-placeholder">
+                                    ?
+                                </div>
+
                             @endif
+
                         </div>
-                        <div class="p-2">
-                            <p class="text-zinc-100 text-xs font-semibold truncate group-hover:text-yellow-400 transition">
+
+                        <div class="cover-card-body">
+
+                            <div class="cover-card-title">
                                 {{ $character->name }}
-                            </p>
+                            </div>
+
                             @if ($character->real_name)
-                                <p class="text-zinc-500 text-xs truncate">{{ $character->real_name }}</p>
+
+                                <div class="cover-card-meta">
+                                    {{ $character->real_name }}
+                                </div>
+
                             @endif
+
                         </div>
+
                     </a>
+
                 @endforeach
+
             </div>
+
         </div>
+
     @endif
 
     {{-- CREDITS --}}
     @if ($issue->people->count() > 0)
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                ✏️ Credits
-                <span class="text-zinc-600 font-normal text-sm ml-2">({{ $issue->people->count() }})</span>
-            </h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                @foreach ($issue->people as $person)
-                    <div class="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3">
-                        <p class="text-zinc-100 font-semibold text-sm truncate">{{ $person->name }}</p>
-                        @if ($person->pivot->role)
-                            <p class="text-yellow-400 text-xs mt-0.5 capitalize">{{ $person->pivot->role }}</p>
-                        @endif
-                    </div>
-                @endforeach
+
+        <div>
+
+            <div class="section-heading">
+
+                <h2 class="section-title">
+                    Credits
+                </h2>
+
+                <div class="section-rule"></div>
+
+                <span class="text-faint"
+                      style="
+                        font-family:var(--font-display);
+                        font-size:0.8rem;
+                        letter-spacing:0.08em;
+                        text-transform:uppercase;
+                      ">
+                    {{ $issue->people->count() }}
+                </span>
+
             </div>
+
+            <div class="grid-4">
+
+                @foreach ($issue->people as $person)
+
+                    <div class="card"
+                         style="padding:1rem 1.2rem;">
+
+                        <div style="
+                            font-weight:600;
+                            color:var(--sl-text);
+                            margin-bottom:0.3rem;
+                        ">
+                            {{ $person->name }}
+                        </div>
+
+                        @if ($person->pivot->role)
+
+                            <div class="badge badge-red">
+                                {{ $person->pivot->role }}
+                            </div>
+
+                        @endif
+
+                    </div>
+
+                @endforeach
+
+            </div>
+
         </div>
+
     @endif
 
 </div>
@@ -305,49 +589,84 @@
 
 @push('scripts')
 <script>
+
     function toggleSection(btn) {
-        const p      = btn.previousElementSibling;
-        const isFull = btn.textContent.trim() === 'Read less';
-        p.textContent = isFull ? btn.dataset.short : btn.dataset.full;
-        btn.textContent = isFull ? 'Read more' : 'Read less';
+
+        const p = btn.previousElementSibling;
+
+        const isFull =
+            btn.textContent.trim() === 'Read less';
+
+        p.textContent =
+            isFull
+                ? btn.dataset.short
+                : btn.dataset.full;
+
+        btn.textContent =
+            isFull
+                ? 'Read more'
+                : 'Read less';
     }
 
     async function toggleRead(id) {
-        const res  = await fetch(`/issues/${id}/read`, {
+
+        const res = await fetch(`/issues/${id}/read`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Content-Type': 'application/json',
             }
         });
+
         const data = await res.json();
-        const btn  = document.getElementById('readBtn');
+
+        const btn = document.getElementById('readBtn');
+
         if (data.status === 'read') {
-            btn.textContent = '✅ Read';
-            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-green-500 text-white';
+
+            btn.textContent = 'Read';
+            btn.className = 'btn btn-primary';
+            btn.style.width = '100%';
+            btn.style.justifyContent = 'center';
+
         } else {
-            btn.textContent = '☐ Mark as Read';
-            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
+
+            btn.textContent = 'Mark as Read';
+            btn.className = 'btn btn-ghost';
+            btn.style.width = '100%';
+            btn.style.justifyContent = 'center';
         }
     }
 
     async function toggleFavouriteIssue(id) {
-        const res  = await fetch(`/issues/${id}/favourite`, {
+
+        const res = await fetch(`/issues/${id}/favourite`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Content-Type': 'application/json',
             }
         });
+
         const data = await res.json();
-        const btn  = document.getElementById('favBtn');
+
+        const btn = document.getElementById('favBtn');
+
         if (data.status === 'favourited') {
-            btn.textContent = '❤️ Favourited';
-            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-red-500 text-white';
+
+            btn.textContent = 'Favourited';
+            btn.className = 'btn btn-primary';
+            btn.style.width = '100%';
+            btn.style.justifyContent = 'center';
+
         } else {
-            btn.textContent = '🤍 Favourite';
-            btn.className = 'w-full text-sm px-4 py-2 rounded-lg transition font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300';
+
+            btn.textContent = 'Favourite';
+            btn.className = 'btn btn-ghost';
+            btn.style.width = '100%';
+            btn.style.justifyContent = 'center';
         }
     }
+
 </script>
 @endpush

@@ -4,159 +4,192 @@
 
 @section('content')
 
-    <div class="space-y-8">
+{{-- PAGE HEADER --}}
+<div class="page-header">
+    <span class="page-header-eyebrow">User Profile</span>
+    <h1 class="page-header-title">{{ $user->username }}</h1>
+    <p class="page-header-sub">{{ $user->email }}</p>
+</div>
 
-        {{-- PROFILE HEADER --}}
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col md:flex-row items-center md:items-start gap-6">
+<div class="grid-4" style="grid-template-columns: 300px 1fr; gap: 2rem; align-items: start;">
 
-            {{-- AVATAR --}}
-            <div class="flex-shrink-0">
-                <div class="w-24 h-24 rounded-full bg-zinc-800 border-2 border-zinc-700 overflow-hidden flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
+    {{-- ─────────────────────────────
+        SIDEBAR
+    ───────────────────────────── --}}
+    <aside class="flex" style="flex-direction: column; gap: 1.25rem; position: sticky; top: 90px;">
+
+        {{-- PROFILE CARD --}}
+        <div class="card">
+            <div style="padding: 1.5rem; text-align: center;">
+
+                <div style="width: 90px; height: 90px; margin: 0 auto 1rem; border-radius: 50%; background: var(--sl-surface); border: 1px solid var(--sl-border-md); display:flex; align-items:center; justify-content:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="currentColor" style="color: var(--sl-faint);">
                         <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                     </svg>
                 </div>
-            </div>
 
-            {{-- USER INFO --}}
-            <div class="text-center md:text-left space-y-2">
-                <h1 class="text-3xl font-black text-yellow-400 uppercase tracking-widest">
+                <div class="section-title" style="font-size: 1.2rem;">
                     {{ $user->username }}
-                </h1>
-                <p class="text-zinc-500 text-sm">{{ $user->email }}</p>
-                <div class="flex items-center justify-center md:justify-start gap-4 pt-2">
-                    <div class="text-center">
-                        <p class="text-yellow-400 font-black text-xl">{{ $readIssues->count() }}</p>
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider">Read</p>
-                    </div>
-                    <div class="w-px h-8 bg-zinc-800"></div>
-                    <div class="text-center">
-                        <p class="text-yellow-400 font-black text-xl">{{ $favouriteIssues->count() }}</p>
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider">Favourites</p>
-                    </div>
-                    <div class="w-px h-8 bg-zinc-800"></div>
-                    <div class="text-center">
-                        <p class="text-yellow-400 font-black text-xl">{{ $favouriteCharacters->count() }}</p>
-                        <p class="text-zinc-500 text-xs uppercase tracking-wider">Characters</p>
-                    </div>
                 </div>
-            </div>
 
+                <div class="text-muted" style="font-size: 12px; margin-top: 0.5rem;">
+                    {{ $user->email }}
+                </div>
+
+            </div>
         </div>
 
-        {{-- FAVOURITE CHARACTERS --}}
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                🦸 Favourite Characters
-            </h3>
-            @if ($favouriteCharacters->count() > 0)
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        {{-- STATS --}}
+        <div class="card">
+
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--sl-border);">
+                <span class="section-link">Collection Stats</span>
+            </div>
+
+            <div>
+
+                <div style="padding: 1rem; display:flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div class="stat-label">Read</div>
+                    </div>
+                    <div class="stat-number" style="font-size: 1.6rem;">
+                        {{ $readIssues->count() }}
+                    </div>
+                </div>
+
+                <div style="padding: 1rem; display:flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--sl-border);">
+                    <div>
+                        <div class="stat-label">Favorites</div>
+                    </div>
+                    <div class="stat-number" style="font-size: 1.6rem;">
+                        {{ $favouriteIssues->count() }}
+                    </div>
+                </div>
+
+                <div style="padding: 1rem; display:flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--sl-border);">
+                    <div>
+                        <div class="stat-label">Characters</div>
+                    </div>
+                    <div class="stat-number" style="font-size: 1.6rem;">
+                        {{ $favouriteCharacters->count() }}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </aside>
+
+    {{-- ─────────────────────────────
+        MAIN CONTENT
+    ───────────────────────────── --}}
+    <section style="display:flex; flex-direction: column; gap: 3rem;">
+
+        {{-- CHARACTERS --}}
+        <div>
+
+            <div class="section-heading">
+                <h2 class="section-title">Favourite Characters</h2>
+                <div class="section-rule"></div>
+            </div>
+
+            @if ($favouriteCharacters->isNotEmpty())
+                <div class="grid-5">
+
                     @foreach ($favouriteCharacters as $character)
-                        <a href="{{ route('characters.show', $character->id) }}"
-                           class="bg-zinc-800 rounded-xl overflow-hidden hover:border-yellow-400 border border-zinc-700 transition group">
-                            <div class="aspect-square overflow-hidden">
+                        <a href="{{ route('characters.show', $character->id) }}" class="cover-card">
+
+                            <div class="cover-card-img">
                                 @if ($character->image)
-                                    <img
-                                        src="{{ $character->image }}"
-                                        alt="{{ $character->name }}"
-                                        class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
-                                    />
+                                    <img src="{{ $character->image }}" alt="{{ $character->name }}">
                                 @else
-                                    <div class="w-full h-full flex items-center justify-center text-zinc-600 text-3xl">?</div>
+                                    <div class="cover-card-placeholder">?</div>
                                 @endif
                             </div>
-                            <div class="p-2">
-                                <p class="text-zinc-100 text-xs font-semibold truncate">{{ $character->name }}</p>
+
+                            <div class="cover-card-body">
+                                <div class="cover-card-title">{{ $character->name }}</div>
                             </div>
+
                         </a>
                     @endforeach
+
                 </div>
             @else
-                <div class="text-center py-8">
-                    <p class="text-zinc-600 text-sm">No favourite characters yet.</p>
-                    <a href="{{ route('explore') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
-                        Explore characters →
-                    </a>
-                </div>
+                <p class="text-muted">No favourite characters yet.</p>
             @endif
+
         </div>
 
-        {{-- FAVOURITE ISSUES --}}
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                ❤️ Favourite Issues
-            </h3>
-            @if ($favouriteIssues->count() > 0)
-                <div class="space-y-2">
-                    @foreach ($favouriteIssues as $issue)
-                        <a href="{{ route('issues.show', $issue->id) }}"
-                           class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 transition group">
-                            @if ($issue->image)
-                                <img src="{{ $issue->image }}" class="w-10 h-14 object-cover object-top rounded flex-shrink-0"/>
-                            @else
-                                <div class="w-10 h-14 bg-zinc-700 rounded flex-shrink-0"></div>
-                            @endif
-                            <div class="flex-1 min-w-0">
-                                <p class="text-zinc-100 font-semibold text-sm truncate group-hover:text-yellow-400 transition">
-                                    {{ $issue->name ?? 'Untitled' }}
-                                </p>
-                                <p class="text-zinc-500 text-xs mt-0.5">
-                                    {{ $issue->volume->name ?? '' }}
-                                    @if ($issue->issue_number) · #{{ $issue->issue_number }} @endif
-                                </p>
+        {{-- ISSUES --}}
+        <div class="grid-2">
+
+            {{-- FAVORITES --}}
+            <div>
+
+                <div class="section-heading">
+                    <h2 class="section-title" style="font-size: 1.1rem;">Favourite Issues</h2>
+                    <div class="section-rule"></div>
+                </div>
+
+                <div style="display:flex; flex-direction: column; gap: 0.75rem;">
+
+                    @forelse ($favouriteIssues as $issue)
+                        <a href="{{ route('issues.show', $issue->id) }}" class="char-card">
+
+                            <img src="{{ $issue->image }}" class="char-avatar">
+
+                            <div class="char-info">
+                                <div class="char-name">{{ $issue->name ?? 'Untitled' }}</div>
+                                <div class="char-meta">
+                                    {{ $issue->volume->name ?? 'Unknown' }} • #{{ $issue->issue_number }}
+                                </div>
                             </div>
-                            <span class="text-zinc-700 group-hover:text-yellow-400 transition">→</span>
-                        </a>
-                    @endforeach
-                </div>
-            @else
-                <div class="text-center py-8">
-                    <p class="text-zinc-600 text-sm">No favourite issues yet.</p>
-                    <a href="{{ route('explore') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
-                        Explore issues →
-                    </a>
-                </div>
-            @endif
-        </div>
 
-        {{-- READ ISSUES --}}
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-zinc-100 uppercase tracking-widest mb-6">
-                ✅ Issues Read
-            </h3>
-            @if ($readIssues->count() > 0)
-                <div class="space-y-2">
-                    @foreach ($readIssues as $issue)
-                        <a href="{{ route('issues.show', $issue->id) }}"
-                           class="flex items-center gap-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 transition group">
-                            @if ($issue->image)
-                                <img src="{{ $issue->image }}" class="w-10 h-14 object-cover object-top rounded flex-shrink-0"/>
-                            @else
-                                <div class="w-10 h-14 bg-zinc-700 rounded flex-shrink-0"></div>
-                            @endif
-                            <div class="flex-1 min-w-0">
-                                <p class="text-zinc-100 font-semibold text-sm truncate group-hover:text-yellow-400 transition">
-                                    {{ $issue->name ?? 'Untitled' }}
-                                </p>
-                                <p class="text-zinc-500 text-xs mt-0.5">
-                                    {{ $issue->volume->name ?? '' }}
-                                    @if ($issue->issue_number) · #{{ $issue->issue_number }} @endif
-                                </p>
+                        </a>
+                    @empty
+                        <p class="text-muted">No favourite issues.</p>
+                    @endforelse
+
+                </div>
+
+            </div>
+
+            {{-- READ --}}
+            <div>
+
+                <div class="section-heading">
+                    <h2 class="section-title" style="font-size: 1.1rem;">Issues Read</h2>
+                    <div class="section-rule"></div>
+                </div>
+
+                <div style="display:flex; flex-direction: column; gap: 0.75rem;">
+
+                    @forelse ($readIssues as $issue)
+                        <a href="{{ route('issues.show', $issue->id) }}" class="char-card">
+
+                            <img src="{{ $issue->image }}" class="char-avatar">
+
+                            <div class="char-info">
+                                <div class="char-name">{{ $issue->name ?? 'Untitled' }}</div>
+                                <div class="char-meta">
+                                    {{ $issue->volume->name ?? 'Unknown' }} • #{{ $issue->issue_number }}
+                                </div>
                             </div>
-                            <span class="text-zinc-700 group-hover:text-yellow-400 transition">→</span>
+
                         </a>
-                    @endforeach
+                    @empty
+                        <p class="text-muted">No read issues.</p>
+                    @endforelse
+
                 </div>
-            @else
-                <div class="text-center py-8">
-                    <p class="text-zinc-600 text-sm">No issues read yet.</p>
-                    <a href="{{ route('explore') }}" class="text-yellow-400 text-sm hover:underline mt-2 block">
-                        Start reading →
-                    </a>
-                </div>
-            @endif
+
+            </div>
+
         </div>
 
-    </div>
+    </section>
+
+</div>
 
 @endsection
