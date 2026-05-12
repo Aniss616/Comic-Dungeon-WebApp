@@ -487,6 +487,7 @@
                                 <img
                                     src="{{ $character->image }}"
                                     alt="{{ $character->name }}"
+                                    style="object-position: top;"
                                 />
 
                             @else

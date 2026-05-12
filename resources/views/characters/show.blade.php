@@ -4,7 +4,11 @@
 
 @section('content')
 
-<div class="space-y-8">
+<style>
+    .sl-hidden { display: none !important; }
+</style>
+
+<div style="display:flex; flex-direction:column; gap:2rem;">
 
     {{-- BACK --}}
     <a href="{{ route('explore') }}?tab=characters"
@@ -14,7 +18,7 @@
 
     {{-- HERO --}}
     <div class="card" style="padding:2rem;">
-        <div class="flex flex-wrap gap-2" style="gap:2rem; align-items:flex-start;">
+        <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;">
 
             {{-- IMAGE --}}
             <div style="width:240px; flex-shrink:0;">
@@ -51,7 +55,7 @@
                 @endif
 
                 {{-- USER ACTIONS --}}
-                <div class="mt-2">
+                <div style="margin-top:0.75rem;">
                     @auth
                         @php
                             $isFavourite = Auth::user()->favouriteCharacters()->where('character_id', $character->id)->exists();
@@ -85,7 +89,7 @@
                 </h1>
 
                 @if ($character->real_name)
-                    <p class="mt-1 text-muted">
+                    <p style="margin-top:0.25rem; color:var(--sl-muted);">
                         Real Name:
                         <span style="color:var(--sl-text); font-weight:600;">
                             {{ $character->real_name }}
@@ -94,13 +98,13 @@
                 @endif
 
                 @if ($character->aliases && count($character->aliases) > 0)
-                    <p class="mt-1 text-faint" style="font-size:13px;">
+                    <p style="margin-top:0.25rem; color:var(--sl-faint); font-size:13px;">
                         {{ implode(', ', $character->aliases) }}
                     </p>
                 @endif
 
                 {{-- DETAILS --}}
-                <div class="grid-4 mt-4">
+                <div class="grid-4" style="margin-top:1.5rem;">
 
                     <div class="card" style="padding:1rem;">
                         <div class="stat-label">Gender</div>
@@ -138,27 +142,22 @@
                 </div>
 
                 {{-- FIRST APPEARANCE --}}
-                <div class="grid-2 mt-4">
+                <div class="grid-2" style="margin-top:1.5rem;">
 
                     @if ($firstAppearance)
                         <div class="card" style="padding:1.25rem;">
-                            <div class="badge badge-red mb-2">
+                            <div class="badge badge-red" style="margin-bottom:0.5rem;">
                                 First Appearance
                             </div>
 
                             <a href="{{ route('issues.show', $firstAppearance->id) }}"
-                               style="
-                                    display:block;
-                                    color:var(--sl-text);
-                                    text-decoration:none;
-                                    font-weight:600;
-                               ">
+                               style="display:block; color:var(--sl-text); text-decoration:none; font-weight:600;">
                                 {{ $firstAppearance->name ?? 'Untitled' }}
                                 #{{ $firstAppearance->issue_number ?? '?' }}
                             </a>
 
                             @if ($firstAppearance->cover_date)
-                                <p class="text-faint mt-1" style="font-size:12px;">
+                                <p style="color:var(--sl-faint); margin-top:0.25rem; font-size:12px;">
                                     {{ $firstAppearance->cover_date }}
                                 </p>
                             @endif
@@ -167,23 +166,18 @@
 
                     @if ($bestStart)
                         <div class="card" style="padding:1.25rem;">
-                            <div class="badge badge-amber mb-2">
+                            <div class="badge badge-amber" style="margin-bottom:0.5rem;">
                                 Best Starting Issue
                             </div>
 
                             <a href="{{ route('issues.show', $bestStart->id) }}"
-                               style="
-                                    display:block;
-                                    color:var(--sl-text);
-                                    text-decoration:none;
-                                    font-weight:600;
-                               ">
+                               style="display:block; color:var(--sl-text); text-decoration:none; font-weight:600;">
                                 {{ $bestStart->name ?? 'Untitled' }}
                                 #{{ $bestStart->issue_number ?? '?' }}
                             </a>
 
                             @if ($bestStart->volume)
-                                <p class="text-faint mt-1" style="font-size:12px;">
+                                <p style="color:var(--sl-faint); margin-top:0.25rem; font-size:12px;">
                                     {{ $bestStart->volume->name }}
                                 </p>
                             @endif
@@ -206,9 +200,10 @@
             </div>
 
             <div class="card" style="padding:1.5rem;">
-                <div class="flex flex-wrap gap-1">
+                <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
                     @foreach ($character->powers as $index => $power)
-                        <span class="badge badge-red {{ $index >= 8 ? 'hidden power-extra' : '' }}"
+                        <span class="badge badge-red{{ $index >= 8 ? ' sl-hidden' : '' }}"
+                              data-group="power-extra"
                               style="padding:0.45rem 0.8rem;">
                             {{ $power }}
                         </span>
@@ -217,7 +212,8 @@
 
                 @if (count($character->powers) > 8)
                     <button onclick="toggleExtra('power-extra', this)"
-                            class="btn btn-ghost mt-3">
+                            class="btn btn-ghost"
+                            style="margin-top:1rem;">
                         Show {{ count($character->powers) - 8 }} more
                     </button>
                 @endif
@@ -231,65 +227,101 @@
          ($character->character_friends && count($character->character_friends) > 0) ||
          ($character->character_enemies && count($character->character_enemies) > 0))
 
-        <div class="grid-3">
+        <div>
+            <div class="section-heading">
+                <h2 class="section-title">Relationships</h2>
+                <div class="section-rule"></div>
+            </div>
 
-            {{-- TEAMS --}}
-            @if ($character->teams && count($character->teams) > 0)
-                <div class="card" style="padding:1.5rem;">
-                    <div class="section-heading" style="margin-bottom:1rem;">
-                        <h3 class="section-title" style="font-size:1.1rem;">Teams</h3>
+            <div class="grid-3">
+
+                {{-- TEAMS --}}
+                @if ($character->teams && count($character->teams) > 0)
+                    <div class="card" style="padding:1.5rem;">
+                        <div class="section-heading" style="margin-bottom:1rem;">
+                            <h3 class="section-title" style="font-size:1.1rem;">Teams</h3>
+                        </div>
+
+                        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+                            @foreach ($character->teams as $index => $team)
+                                <span class="badge badge-neutral{{ $index >= 5 ? ' sl-hidden' : '' }}"
+                                      data-group="team-extra">
+                                    {{ $team['name'] }}
+                                </span>
+                            @endforeach
+                        </div>
+
+                        @if (count($character->teams) > 5)
+                            <button onclick="toggleExtra('team-extra', this)"
+                                    class="btn btn-ghost"
+                                    style="margin-top:1rem;">
+                                Show {{ count($character->teams) - 5 }} more
+                            </button>
+                        @endif
                     </div>
+                @endif
 
-                    <div class="flex flex-wrap gap-1">
-                        @foreach ($character->teams as $index => $team)
-                            <span class="badge badge-neutral {{ $index >= 5 ? 'hidden team-extra' : '' }}">
-                                {{ $team['name'] }}
-                            </span>
-                        @endforeach
+                {{-- ALLIES --}}
+                @if ($character->character_friends && count($character->character_friends) > 0)
+                    <div class="card" style="padding:1.5rem;">
+                        <div class="section-heading" style="margin-bottom:1rem;">
+                            <h3 class="section-title" style="font-size:1.1rem;">Allies</h3>
+                        </div>
+
+                        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+                            @foreach ($character->character_friends as $index => $friend)
+                                <span class="badge badge-amber{{ $index >= 5 ? ' sl-hidden' : '' }}"
+                                      data-group="friend-extra">
+                                    {{ $friend['name'] }}
+                                </span>
+                            @endforeach
+                        </div>
+
+                        @if (count($character->character_friends) > 5)
+                            <button onclick="toggleExtra('friend-extra', this)"
+                                    class="btn btn-ghost"
+                                    style="margin-top:1rem;">
+                                Show {{ count($character->character_friends) - 5 }} more
+                            </button>
+                        @endif
                     </div>
-                </div>
-            @endif
+                @endif
 
-            {{-- FRIENDS --}}
-            @if ($character->character_friends && count($character->character_friends) > 0)
-                <div class="card" style="padding:1.5rem;">
-                    <div class="section-heading" style="margin-bottom:1rem;">
-                        <h3 class="section-title" style="font-size:1.1rem;">Allies</h3>
+                {{-- ENEMIES --}}
+                @if ($character->character_enemies && count($character->character_enemies) > 0)
+                    <div class="card" style="padding:1.5rem;">
+                        <div class="section-heading" style="margin-bottom:1rem;">
+                            <h3 class="section-title" style="font-size:1.1rem;">Enemies</h3>
+                        </div>
+
+                        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+                            @foreach ($character->character_enemies as $index => $enemy)
+                                <span class="badge badge-red{{ $index >= 5 ? ' sl-hidden' : '' }}"
+                                      data-group="enemy-extra">
+                                    {{ $enemy['name'] }}
+                                </span>
+                            @endforeach
+                        </div>
+
+                        @if (count($character->character_enemies) > 5)
+                            <button onclick="toggleExtra('enemy-extra', this)"
+                                    class="btn btn-ghost"
+                                    style="margin-top:1rem;">
+                                Show {{ count($character->character_enemies) - 5 }} more
+                            </button>
+                        @endif
                     </div>
+                @endif
 
-                    <div class="flex flex-wrap gap-1">
-                        @foreach ($character->character_friends as $index => $friend)
-                            <span class="badge badge-amber {{ $index >= 5 ? 'hidden friend-extra' : '' }}">
-                                {{ $friend['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            {{-- ENEMIES --}}
-            @if ($character->character_enemies && count($character->character_enemies) > 0)
-                <div class="card" style="padding:1.5rem;">
-                    <div class="section-heading" style="margin-bottom:1rem;">
-                        <h3 class="section-title" style="font-size:1.1rem;">Enemies</h3>
-                    </div>
-
-                    <div class="flex flex-wrap gap-1">
-                        @foreach ($character->character_enemies as $index => $enemy)
-                            <span class="badge badge-red {{ $index >= 5 ? 'hidden enemy-extra' : '' }}">
-                                {{ $enemy['name'] }}
-                            </span>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
+            </div>
         </div>
 
     @endif
 
     {{-- ISSUES --}}
     @if ($issues->count() > 0)
+
+        @php $sortedIssues = $issues->sortBy('cover_date')->values(); @endphp
 
         <div>
             <div class="section-heading">
@@ -298,21 +330,17 @@
             </div>
 
             <div class="grid-5">
-                @foreach ($issues->sortBy('cover_date')->values() as $index => $issue)
+                @foreach ($sortedIssues as $index => $issue)
 
                     <a href="{{ route('issues.show', $issue->id) }}"
-                       class="cover-card {{ $index >= 12 ? 'hidden issue-extra' : '' }}">
+                       class="cover-card{{ $index >= 10 ? ' sl-hidden' : '' }}"
+                       data-group="issue-extra">
 
                         <div class="cover-card-img">
                             @if ($issue->image)
-                                <img
-                                    src="{{ $issue->image }}"
-                                    alt="{{ $issue->name }}"
-                                />
+                                <img src="{{ $issue->image }}" alt="{{ $issue->name }}" />
                             @else
-                                <div class="cover-card-placeholder">
-                                    ISSUE
-                                </div>
+                                <div class="cover-card-placeholder">ISSUE</div>
                             @endif
                         </div>
 
@@ -320,12 +348,9 @@
                             <div class="cover-card-title">
                                 {{ $issue->name ?? 'Untitled' }}
                             </div>
-
                             <div class="cover-card-meta">
                                 {{ $issue->volume->name ?? '' }}
-                                @if ($issue->issue_number)
-                                    · #{{ $issue->issue_number }}
-                                @endif
+                                @if ($issue->issue_number) · #{{ $issue->issue_number }} @endif
                             </div>
                         </div>
 
@@ -334,12 +359,12 @@
                 @endforeach
             </div>
 
-            @if ($issues->count() > 12)
+            @if ($sortedIssues->count() > 10)
                 <button
                     onclick="toggleExtra('issue-extra', this)"
-                    class="btn btn-ghost mt-4 w-full"
-                    style="justify-content:center;">
-                    Show {{ $issues->count() - 12 }} more issues
+                    class="btn btn-ghost"
+                    style="margin-top:1.5rem; width:100%; justify-content:center;">
+                    Show {{ $sortedIssues->count() - 10 }} more issues
                 </button>
             @endif
         </div>
@@ -359,26 +384,32 @@
 
                 @foreach ($descriptionSections as $index => $section)
 
-                    <div class="card {{ $index >= 4 ? 'hidden bio-extra' : '' }}"
+                    @php
+                        $decoded = html_entity_decode($section['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        $short   = Str::limit($decoded, 300);
+                    @endphp
+
+                    <div class="card{{ $index >= 4 ? ' sl-hidden' : '' }}"
+                         data-group="bio-extra"
                          style="padding:1.5rem;">
 
                         @if ($section['title'])
-                            <div class="badge badge-red mb-2">
+                            <div class="badge badge-red" style="margin-bottom:0.5rem;">
                                 {{ $section['title'] }}
                             </div>
                         @endif
 
-                        <p class="text-muted" style="line-height:1.8;">
-                            {{ Str::limit($section['content'], 300) }}
+                        <p style="color:var(--sl-muted); line-height:1.8;">
+                            {{ $short }}
                         </p>
 
-                        @if (strlen($section['content']) > 300)
+                        @if (strlen($decoded) > 300)
                             <button
                                 onclick="toggleSection(this)"
-                                data-full="{{ e($section['content']) }}"
-                                data-short="{{ e(Str::limit($section['content'], 300)) }}"
-                                class="section-link mt-2"
-                                style="background:none; border:none; cursor:pointer;">
+                                data-full="{{ e($decoded) }}"
+                                data-short="{{ e($short) }}"
+                                class="section-link"
+                                style="margin-top:0.5rem; background:none; border:none; cursor:pointer;">
                                 Read more
                             </button>
                         @endif
@@ -392,8 +423,8 @@
             @if (count($descriptionSections) > 4)
                 <button
                     onclick="toggleExtra('bio-extra', this)"
-                    class="btn btn-ghost mt-4 w-full"
-                    style="justify-content:center;">
+                    class="btn btn-ghost"
+                    style="margin-top:1.5rem; width:100%; justify-content:center;">
                     Show {{ count($descriptionSections) - 4 }} more sections
                 </button>
             @endif
@@ -402,30 +433,55 @@
 
     @endif
 
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
-    function toggleExtra(className, btn) {
-        const items = document.querySelectorAll('.' + className);
-        const isHidden = items[0].classList.contains('hidden');
+    function toggleExtra(group, btn, initialCount = 5) {
+    const items = document.querySelectorAll(`[data-group="${group}"]`);
 
-        items.forEach(el => el.classList.toggle('hidden'));
+    // current state
+    const expanded = btn.dataset.expanded === 'true';
 
-        const count = items.length;
-        btn.textContent = isHidden ? 'Show less' : `Show ${count} more`;
+    if (!expanded) {
+        // SHOW ALL
+        items.forEach(el => el.classList.remove('sl-hidden'));
+
+        btn.dataset.expanded = 'true';
+        btn.textContent = 'Show less';
+
+    } else {
+        // SHOW ONLY INITIAL COUNT
+        items.forEach((el, index) => {
+            if (index >= initialCount) {
+                el.classList.add('sl-hidden');
+            }
+        });
+
+        btn.dataset.expanded = 'false';
+
+        const hiddenCount = Math.max(items.length - initialCount, 0);
+
+        if (group === 'issue-extra') {
+            btn.textContent = `Show ${hiddenCount} more issues`;
+        } else if (group === 'bio-extra') {
+            btn.textContent = `Show ${hiddenCount} more sections`;
+        } else {
+            btn.textContent = `Show ${hiddenCount} more`;
+        }
     }
+}
 
     function toggleSection(btn) {
         const p = btn.previousElementSibling;
         const isFull = btn.textContent.trim() === 'Read less';
-
         p.textContent = isFull ? btn.dataset.short : btn.dataset.full;
         btn.textContent = isFull ? 'Read more' : 'Read less';
     }
 
     async function toggleFavouriteCharacter(id) {
-
         const res = await fetch(`/characters/${id}/favourite`, {
             method: 'POST',
             headers: {
@@ -435,20 +491,17 @@
         });
 
         const data = await res.json();
-
         const btn = document.getElementById('charFavBtn');
 
         if (data.status === 'favourited') {
             btn.textContent = 'Favourited';
             btn.className = 'btn btn-primary';
-            btn.style.width = '100%';
-            btn.style.justifyContent = 'center';
         } else {
             btn.textContent = 'Favourite';
             btn.className = 'btn btn-ghost';
-            btn.style.width = '100%';
-            btn.style.justifyContent = 'center';
         }
+        btn.style.width = '100%';
+        btn.style.justifyContent = 'center';
     }
 </script>
 @endpush
