@@ -134,101 +134,98 @@ class ComicVineImportService
     }
 
     public function importVolume(int $comicVineId)
-    {
-        $response = $this->comicVine->getVolume($comicVineId);
-        $data     = $response['results'] ?? null;
+{
+    $response = $this->comicVine->getVolume($comicVineId);
+    $data     = $response['results'] ?? null;
+    if (!$data) return null;
 
-        if (!$data) return null;
-
-        $publisherId = null;
-        if (!empty($data['publisher'])) {
-            $publisher   = $this->importPublisher($data['publisher']['id']);
-            $publisherId = $publisher?->id;
-        }
-
-        return Volume::updateOrCreate(
-            ['comic_vine_id' => $data['id']],
-            [
-                'name'            => $data['name'] ?? null,
-                'description'     => $data['description'] ?? null,
-                'cover_image'     => $data['image']['original_url'] ?? null,
-                'count_of_issues' => $data['count_of_issues'] ?? null,
-                'first_issue'     => $data['first_issue'] ?? null,
-                'last_issue'      => $data['last_issue'] ?? null,
-                'site_detail_url' => $data['site_detail_url'] ?? null,
-                'publisher_id'    => $publisherId,
-            ]
-        );
+    $publisherId = null;
+    if (!empty($data['publisher'])) {
+        $publisher   = $this->importPublisher($data['publisher']['id']);
+        $publisherId = $publisher?->id;
     }
+
+    $volume = Volume::updateOrCreate(
+        ['comic_vine_id' => $data['id']],
+        [
+            'name'            => $data['name'] ?? null,
+            'description'     => $data['description'] ?? null,
+            'cover_image'     => $data['image']['original_url'] ?? null,
+            'count_of_issues' => $data['count_of_issues'] ?? null,
+            'first_issue'     => $data['first_issue'] ?? null,
+            'last_issue'      => $data['last_issue'] ?? null,
+            'site_detail_url' => $data['site_detail_url'] ?? null,
+            'publisher_id'    => $publisherId,
+        ]
+    );
+
+    $this->importIssuesByVolume($comicVineId);
+
+    return $volume;
+}
 
     /* =========================
         ISSUES
     ========================= */
 
-    public function importIssuesByVolume(int $volumeId, int $limit = 20)
-    {
-    $volume = $this->importVolume($volumeId);
+public function importIssuesByVolume(int $volumeId, int $limit = 20)
+{
+    $volume = Volume::where('comic_vine_id', $volumeId)->first();
     if (!$volume) return 0;
 
-    // Get list of issue IDs for this volume
     $response = $this->comicVine->getIssuesByVolume($volumeId, $limit);
-        if (!isset($response['results'])) return 0;
+    if (!isset($response['results'])) return 0;
 
     $imported = 0;
+    foreach ($response['results'] as $data) {
+        $fullResponse = $this->comicVine->getIssue($data['id']);
+        $fullData     = $fullResponse['results'] ?? null;
+        if (!$fullData) continue;
 
-        foreach ($response['results'] as $data) {
-            // Fetch full issue data to get character_credits, person_credits etc.
-            $fullResponse = $this->comicVine->getIssue($data['id']);
-            $fullData     = $fullResponse['results'] ?? null;
+        $issue = Issue::updateOrCreate(
+            ['comic_vine_id' => $fullData['id']],
+            [
+                'name'              => $fullData['name'] ?? null,
+                'issue_number'      => $fullData['issue_number'] ?? null,
+                'description'       => $fullData['description'] ?? null,
+                'image'             => $fullData['image']['original_url'] ?? null,
+                'cover_date'        => $fullData['cover_date'] ?? null,
+                'store_date'        => $fullData['store_date'] ?? null,
+                'teams'             => $this->parseNameList($fullData['team_credits'] ?? []),
+                'locations'         => $this->parseNameList($fullData['location_credits'] ?? []),
+                'story_arc_credits' => $this->parseNameList($fullData['story_arc_credits'] ?? []),
+                'site_detail_url'   => $fullData['site_detail_url'] ?? null,
+                'volume_id'         => $volume->id,
+            ]
+        );
 
-            if (!$fullData) continue;
-
-            $issue = Issue::updateOrCreate(
-                ['comic_vine_id' => $fullData['id']],
-                [
-                    'name'              => $fullData['name'] ?? null,
-                    'issue_number'      => $fullData['issue_number'] ?? null,
-                    'description'       => $fullData['description'] ?? null,
-                    'image'             => $fullData['image']['original_url'] ?? null,
-                    'cover_date'        => $fullData['cover_date'] ?? null,
-                    'store_date'        => $fullData['store_date'] ?? null,
-                    'teams'             => $this->parseNameList($fullData['team_credits'] ?? []),
-                    'locations'         => $this->parseNameList($fullData['location_credits'] ?? []),
-                    'story_arc_credits' => $this->parseNameList($fullData['story_arc_credits'] ?? []),
-                    'site_detail_url' => $fullData['site_detail_url'] ?? null,
-                    'volume_id'         => $volume->id,
-                ]
-            );
-
-        // Attach characters
-            if (!empty($fullData['character_credits'])) {
-                foreach ($fullData['character_credits'] as $charData) {
-                    $character = Character::firstOrCreate(
-                        ['comic_vine_id' => $charData['id']],
-                        ['name' => $charData['name'] ?? null]
-                    );
-                    $issue->characters()->syncWithoutDetaching($character->id);
-                }
+        if (!empty($fullData['character_credits'])) {
+            foreach ($fullData['character_credits'] as $charData) {
+                $character = Character::firstOrCreate(
+                    ['comic_vine_id' => $charData['id']],
+                    ['name' => $charData['name'] ?? null]
+                );
+                $issue->characters()->syncWithoutDetaching($character->id);
             }
-
-        // Attach people with role
-            if (!empty($fullData['person_credits'])) {
-                foreach ($fullData['person_credits'] as $personData) {
-                    $person = Person::firstOrCreate(
-                        ['comic_vine_id' => $personData['id']],
-                        ['name' => $personData['name'] ?? null]
-                    );
-                    $issue->people()->syncWithoutDetaching([
-                        $person->id => ['role' => $personData['role'] ?? null]
-                    ]);
-                }
-            }
-
-         $imported++;
         }
 
-        return $imported;
+        if (!empty($fullData['person_credits'])) {
+            foreach ($fullData['person_credits'] as $personData) {
+                $person = Person::firstOrCreate(
+                    ['comic_vine_id' => $personData['id']],
+                    ['name' => $personData['name'] ?? null]
+                );
+                $issue->people()->syncWithoutDetaching([
+                    $person->id => ['role' => $personData['role'] ?? null]
+                ]);
+            }
+        }
+
+        $imported++;
     }
+
+    return $imported;
+}
 
     public function importIssue(int $comicVineId)
     {

@@ -125,7 +125,6 @@
     </div>
 
     <p id="searchMsg" class="text-faint mb-2"></p>
-
     <div id="searchResults"></div>
 
 </div>
@@ -213,5 +212,161 @@
     </div>
 
 </div>
+@push('scripts')
+<script>
+    const apiBase = '/api';
 
+    async function callApi(url, method = 'POST') {
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                }
+            });
+            return await res.json();
+        } catch (e) {
+            return { message: 'Request failed' };
+        }
+    }
+
+    function setMsg(id, msg, ok = true) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.style.color = ok ? 'var(--sl-amber)' : 'var(--sl-red)';
+    }
+
+    async function importIssues() {
+        const id = document.getElementById('volumeIdInput').value;
+        if (!id) return setMsg('importIssuesMsg', 'Please enter a volume ID', false);
+        setMsg('importIssuesMsg', 'Importing...', true);
+        const data = await callApi(`${apiBase}/import/volumes/${id}/issues`);
+        setMsg('importIssuesMsg', data.message ?? 'Done', !data.error);
+    }
+
+    async function importVolume() {
+        const id = document.getElementById('singleVolumeInput').value;
+        if (!id) return setMsg('importVolumeMsg', 'Please enter a volume ID', false);
+        setMsg('importVolumeMsg', 'Importing...', true);
+        const data = await callApi(`${apiBase}/import/volumes/${id}`);
+        setMsg('importVolumeMsg', data.message ?? 'Done', !data.error);
+    }
+
+    async function importCharacters() {
+        const limit  = document.getElementById('charLimit').value  || 10;
+        const offset = document.getElementById('charOffset').value || 0;
+        setMsg('importCharsMsg', 'Importing...', true);
+        const data = await callApi(`${apiBase}/import/characters?limit=${limit}&offset=${offset}`);
+        setMsg('importCharsMsg', data.message ?? 'Done', !data.error);
+    }
+
+    async function importPeople() {
+        const limit  = document.getElementById('peopleLimit').value  || 10;
+        const offset = document.getElementById('peopleOffset').value || 0;
+        setMsg('importPeopleMsg', 'Importing...', true);
+        const data = await callApi(`${apiBase}/import/persons?limit=${limit}&offset=${offset}`);
+        setMsg('importPeopleMsg', data.message ?? 'Done', !data.error);
+    }
+
+    async function randomCharacter() {
+        setMsg('randomMsg', 'Rolling...', true);
+        const data = await callApi(`${apiBase}/characters/random`, 'GET');
+        if (!data.character) {
+            return setMsg('randomMsg', data.message ?? 'No character found', false);
+        }
+        const c = data.character;
+        document.getElementById('randomImage').src        = c.image ?? '';
+        document.getElementById('randomName').textContent = c.name ?? '';
+        document.getElementById('randomDesc').textContent = c.description ?? '';
+        const fa = data.first_appearance;
+        document.getElementById('randomFirstAppearance').textContent = fa
+            ? `${fa.name ?? 'Unknown'} #${fa.issue_number ?? '?'}` : 'Unknown';
+        const bs = data.best_starting_issue;
+        document.getElementById('randomBestStart').textContent = bs
+            ? `${bs.name ?? 'Unknown'} #${bs.issue_number ?? '?'}` : 'Unknown';
+        const path = data.reading_path ?? [];
+        const pathEl = document.getElementById('readingPath');
+        pathEl.innerHTML = path.map(issue => `
+            <div class="char-card">
+                <div class="char-info">
+                    <div class="char-name">#${issue.issue_number ?? '?'} — ${issue.name ?? 'Untitled'}</div>
+                    <div class="char-meta">${issue.cover_date ?? ''}</div>
+                </div>
+            </div>`).join('');
+        document.getElementById('randomResult').classList.remove('hidden');
+        setMsg('randomMsg', '', true);
+    }
+
+    // ── Comic Vine Search ──────────────────────────────────────────────
+
+    document.getElementById('comicVineSearch').addEventListener('keydown', e => {
+        if (e.key === 'Enter') searchComicVine();
+    });
+
+    async function searchComicVine() {
+        const q = document.getElementById('comicVineSearch').value.trim();
+        if (!q) return;
+        setMsg('searchMsg', 'Searching...');
+        document.getElementById('searchResults').innerHTML = '';
+        const data = await callApi(`${apiBase}/search/comicvine?q=${encodeURIComponent(q)}`, 'GET');
+        setMsg('searchMsg', '');
+        const results = data.results ?? [];
+        if (!results.length) { setMsg('searchMsg', 'No results found.'); return; }
+
+        const typeLabel = { character: 'Character', volume: 'Volume', issue: 'Issue', publisher: 'Publisher' };
+        const typeBadge = { character: 'badge-red', volume: 'badge-amber', issue: 'badge-neutral', publisher: 'badge-neutral' };
+
+        document.getElementById('searchResults').innerHTML = results.map(r => {
+            const img = r.image?.medium_url
+                ? `<img class="char-avatar" src="${r.image.medium_url}" onerror="this.style.display='none'">`
+                : '<div class="char-avatar-placeholder"></div>';
+
+            const badge = `<span class="badge ${typeBadge[r.resource_type] ?? 'badge-neutral'}">${typeLabel[r.resource_type] ?? r.resource_type}</span>`;
+
+            const action = (() => {
+                if (r.imported === 'full') {
+                    return `<span style="font-size:11px; color:var(--sl-muted); text-transform:uppercase; letter-spacing:0.06em;">Imported</span>`;
+                }
+                if (r.imported === 'stub' && r.resource_type === 'character') {
+                    return `<button class="btn btn-primary" style="font-size:11px;padding:0.3rem 0.75rem;" onclick="importResult('character',${r.id},this)">Full Import</button>`;
+                }
+                if (!r.imported && (r.resource_type === 'character' || r.resource_type === 'volume')) {
+                    return `<button class="btn btn-primary" style="font-size:11px;padding:0.3rem 0.75rem;" onclick="importResult('${r.resource_type}',${r.id},this)">Import</button>`;
+                }
+                return '';
+            })();
+
+            return `
+                <div class="char-card" style="margin-bottom:0.5rem; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:0.75rem; min-width:0;">
+                        ${img}
+                        <div class="char-info">
+                            <div class="char-name">${r.name ?? 'Unknown'} ${badge}</div>
+                            <div class="char-meta">${r.deck ?? ''}</div>
+                        </div>
+                    </div>
+                    <div style="flex-shrink:0; margin-left:1rem;">${action}</div>
+                </div>`;
+        }).join('');
+    }
+
+    async function importResult(type, id, btn) {
+        btn.disabled = true;
+        btn.textContent = 'Importing...';
+        let url;
+        if (type === 'character') url = `${apiBase}/import/characters/${id}`;
+        if (type === 'volume')    url = `${apiBase}/import/volumes/${id}`;
+        const data = await callApi(url, 'POST');
+        if (data.error) {
+            btn.textContent = 'Failed';
+            btn.style.color = 'var(--sl-red)';
+            btn.disabled = false;
+        } else {
+            btn.textContent = 'Imported';
+            btn.style.opacity = '0.5';
+        }
+    }
+</script>
+@endpush
 @endsection
