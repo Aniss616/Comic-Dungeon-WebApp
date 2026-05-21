@@ -48,8 +48,9 @@
 
                 @foreach ([
                     'characters' => 'Characters',
-                    'volumes'   => 'Volumes',
-                    'issues'    => 'Issues'
+                    'volumes'    => 'Volumes',
+                    'issues'     => 'Issues',
+                    'arcs'       => 'Story Arcs',
                 ] as $key => $label)
 
                     <button
@@ -90,39 +91,25 @@
 
                 @foreach ($characters as $character)
 
-                    <a href="{{ route('characters.show', $character->id) }}"
-                       class="cover-card">
+                    <a href="{{ route('characters.show', $character->id) }}" class="cover-card">
 
                         <div class="cover-card-img" style="aspect-ratio:1/1;">
 
                             @if ($character->image)
-
                                 <img
                                     src="{{ $character->image }}"
                                     alt="{{ $character->name }}"
                                     class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
                                 />
-
                             @else
-
-                                <div class="cover-card-placeholder">
-                                    ?
-                                </div>
-
+                                <div class="cover-card-placeholder">?</div>
                             @endif
 
                         </div>
 
                         <div class="cover-card-body">
-
-                            <div class="cover-card-title">
-                                {{ $character->name }}
-                            </div>
-
-                            <div class="cover-card-meta">
-                                {{ $character->publisher ?? 'Unknown Publisher' }}
-                            </div>
-
+                            <div class="cover-card-title">{{ $character->name }}</div>
+                            <div class="cover-card-meta">{{ $character->publisher ?? 'Unknown Publisher' }}</div>
                         </div>
 
                     </a>
@@ -134,18 +121,13 @@
         @else
 
             <div class="card" style="padding:4rem 2rem; text-align:center;">
-                <p class="text-muted">
-                    No characters found in the archive.
-                </p>
+                <p class="text-muted">No characters found in the archive.</p>
             </div>
 
         @endif
 
-        {{-- PAGINATION --}}
         @if ($characters->hasPages())
-            <div class="mt-4">
-                {{ $characters->links() }}
-            </div>
+            <div class="mt-4">{{ $characters->links() }}</div>
         @endif
 
     @endif
@@ -171,38 +153,21 @@
 
                 @foreach ($volumes as $volume)
 
-                    <a href="{{ route('volumes.show', $volume->id) }}"
-                       class="cover-card">
+                    <a href="{{ route('volumes.show', $volume->id) }}" class="cover-card">
 
                         <div class="cover-card-img">
 
                             @if ($volume->cover_image)
-
-                                <img
-                                    src="{{ $volume->cover_image }}"
-                                    alt="{{ $volume->name }}"
-                                />
-
+                                <img src="{{ $volume->cover_image }}" alt="{{ $volume->name }}" />
                             @else
-
-                                <div class="cover-card-placeholder">
-                                    📚
-                                </div>
-
+                                <div class="cover-card-placeholder">No Image</div>
                             @endif
 
                         </div>
 
                         <div class="cover-card-body">
-
-                            <div class="cover-card-title">
-                                {{ $volume->name }}
-                            </div>
-
-                            <div class="cover-card-meta">
-                                {{ $volume->publisher->name ?? 'Unknown Publisher' }}
-                            </div>
-
+                            <div class="cover-card-title">{{ $volume->name }}</div>
+                            <div class="cover-card-meta">{{ $volume->publisher->name ?? 'Unknown Publisher' }}</div>
                         </div>
 
                     </a>
@@ -214,18 +179,13 @@
         @else
 
             <div class="card" style="padding:4rem 2rem; text-align:center;">
-                <p class="text-muted">
-                    No volumes found in the archive.
-                </p>
+                <p class="text-muted">No volumes found in the archive.</p>
             </div>
 
         @endif
 
-        {{-- PAGINATION --}}
         @if ($volumes->hasPages())
-            <div class="mt-4">
-                {{ $volumes->links() }}
-            </div>
+            <div class="mt-4">{{ $volumes->links() }}</div>
         @endif
 
     @endif
@@ -251,42 +211,26 @@
 
                 @foreach ($issues as $issue)
 
-                    <a href="{{ route('issues.show', $issue->id) }}"
-                       class="cover-card">
+                    <a href="{{ route('issues.show', $issue->id) }}" class="cover-card">
 
                         <div class="cover-card-img">
 
                             @if ($issue->image)
-
-                                <img
-                                    src="{{ $issue->image }}"
-                                    alt="{{ $issue->name }}"
-                                />
-
+                                <img src="{{ $issue->image }}" alt="{{ $issue->name }}" />
                             @else
-
-                                <div class="cover-card-placeholder">
-                                    📄
-                                </div>
-
+                                <div class="cover-card-placeholder">No Image</div>
                             @endif
 
                         </div>
 
                         <div class="cover-card-body">
-
-                            <div class="cover-card-title">
-                                {{ $issue->name ?? 'Untitled' }}
-                            </div>
-
+                            <div class="cover-card-title">{{ $issue->name ?? 'Untitled' }}</div>
                             <div class="cover-card-meta">
                                 {{ $issue->volume->name ?? 'Unknown Volume' }}
-
                                 @if ($issue->issue_number)
                                     · #{{ $issue->issue_number }}
                                 @endif
                             </div>
-
                         </div>
 
                     </a>
@@ -298,18 +242,85 @@
         @else
 
             <div class="card" style="padding:4rem 2rem; text-align:center;">
-                <p class="text-muted">
-                    No issues found in the archive.
-                </p>
+                <p class="text-muted">No issues found in the archive.</p>
             </div>
 
         @endif
 
-        {{-- PAGINATION --}}
         @if ($issues->hasPages())
-            <div class="mt-4">
-                {{ $issues->links() }}
+            <div class="mt-4">{{ $issues->links() }}</div>
+        @endif
+
+    @endif
+
+
+    {{-- STORY ARCS --}}
+    @if ($tab === 'arcs')
+
+        <style>
+            .arc-card {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: 1.5rem;
+                text-decoration: none;
+                gap: 0.75rem;
+                transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+            }
+            .arc-card:hover {
+                border-color: rgba(192, 57, 43, 0.45);
+                background: var(--sl-red-dim);
+                transform: translateY(-3px);
+            }
+        </style>
+
+        <div class="section-heading">
+            <h2 class="section-title">Story Arcs</h2>
+            <div class="section-rule"></div>
+
+            @if($storyArcs->count())
+                <span class="badge badge-red">
+                    {{ $storyArcs->total() }} Results
+                </span>
+            @endif
+        </div>
+
+        @if ($storyArcs->count() > 0)
+
+            <div class="grid-3">
+
+                @foreach ($storyArcs as $arc)
+
+                    <a href="{{ route('story-arcs.show', $arc->id) }}" class="card arc-card">
+
+                        <div style="font-family:var(--font-display); font-size:1.15rem;
+                                    font-weight:800; text-transform:uppercase;
+                                    color:var(--sl-text); letter-spacing:0.04em; line-height:1.2;">
+                            {{ $arc->name }}
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span class="badge badge-amber">
+                                {{ $arc->issues_count }} {{ Str::plural('issue', $arc->issues_count) }}
+                            </span>
+                        </div>
+
+                    </a>
+
+                @endforeach
+
             </div>
+
+        @else
+
+            <div class="card" style="padding:4rem 2rem; text-align:center;">
+                <p class="text-muted">No story arcs found in the archive.</p>
+            </div>
+
+        @endif
+
+        @if ($storyArcs->hasPages())
+            <div class="mt-4">{{ $storyArcs->links() }}</div>
         @endif
 
     @endif

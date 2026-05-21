@@ -6,20 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Character;
 use App\Models\Volume;
 use App\Models\Issue;
+use App\Models\StoryArc;
 
 class ExploreController extends Controller
 {
     public function index()
     {
-        $q    = request('q');
-        $tab  = request('tab', 'characters');
+        $q   = request('q');
+        $tab = request('tab', 'characters');
 
         $characters = collect();
         $volumes    = collect();
         $issues     = collect();
+        $storyArcs  = collect();
 
         if ($q) {
-            // Search mode
             if ($tab === 'characters') {
                 $characters = Character::where('name', 'like', "%$q%")
                     ->orderBy('name')
@@ -33,16 +34,21 @@ class ExploreController extends Controller
                     ->withQueryString();
             } elseif ($tab === 'issues') {
                 $issues = Issue::with('volume')
-                ->where('name', 'like', "%$q%")
-                ->orWhereHas('volume', function($query) use ($q) {
-                    $query->where('name', 'like', "%$q%");
-                })
-                ->orderBy('name')
-                ->paginate(24)
-                ->withQueryString();
+                    ->where('name', 'like', "%$q%")
+                    ->orWhereHas('volume', function ($query) use ($q) {
+                        $query->where('name', 'like', "%$q%");
+                    })
+                    ->orderBy('name')
+                    ->paginate(24)
+                    ->withQueryString();
+            } elseif ($tab === 'arcs') {
+                $storyArcs = StoryArc::where('name', 'like', "%$q%")
+                    ->withCount('issues')
+                    ->orderBy('name')
+                    ->paginate(24)
+                    ->withQueryString();
             }
         } else {
-            // Default random mode
             if ($tab === 'characters') {
                 $characters = Character::whereNotNull('image')
                     ->inRandomOrder()
@@ -60,9 +66,17 @@ class ExploreController extends Controller
                     ->inRandomOrder()
                     ->paginate(24)
                     ->withQueryString();
+            } elseif ($tab === 'arcs') {
+                $storyArcs = StoryArc::withCount('issues')
+                    ->having('issues_count', '>', 0)
+                    ->inRandomOrder()
+                    ->paginate(24)
+                    ->withQueryString();
             }
         }
 
-        return view('explore.index', compact('characters', 'volumes', 'issues', 'q', 'tab'));
+        return view('explore.index', compact(
+            'characters', 'volumes', 'issues', 'storyArcs', 'q', 'tab'
+        ));
     }
 }

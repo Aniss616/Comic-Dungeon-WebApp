@@ -27,6 +27,7 @@ Route::get('/characters/{id}', [CharacterController::class, 'show'])->name('char
 Route::get('/volumes/{id}',    [VolumeController::class, 'show'])->name('volumes.show');
 Route::get('/issues/{id}',     [IssueController::class, 'show'])->name('issues.show');
 Route::get('/random-character', [App\Http\Controllers\Web\RandomController::class, 'randomCharacter'])->name('random.character');
+Route::get('/story-arcs/{storyArc}', [App\Http\Controllers\Web\StoryArcController::class, 'show'])->name('story-arcs.show');
 
 // Admin only
 Route::middleware(['auth', 'admin'])->group(function () {

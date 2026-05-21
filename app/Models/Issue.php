@@ -47,4 +47,9 @@ class Issue extends Model
         return $this->belongsToMany(Character::class, 'issue_characters')
             ->withTimestamps();
     }
+
+    public function storyArcs()
+    {
+        return $this->belongsToMany(StoryArc::class, 'issue_story_arc')->withTimestamps();
+    }
 }
