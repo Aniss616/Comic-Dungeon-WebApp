@@ -285,35 +285,29 @@
 
                 {{-- STORY ARCS --}}
                 @if ($issue->story_arc_credits && count($issue->story_arc_credits) > 0)
-
                     <div class="mt-4">
-
-                        <div class="section-heading"
-                             style="margin-bottom:1rem;">
-
-                            <h3 class="section-title"
-                                style="font-size:1rem;">
-                                Story Arcs
-                            </h3>
-
+                        <div class="section-heading" style="margin-bottom:1rem;">
+                            <h3 class="section-title" style="font-size:1rem;">Story Arcs</h3>
                             <div class="section-rule"></div>
-
                         </div>
-
                         <div class="flex flex-wrap gap-1">
-
                             @foreach ($issue->story_arc_credits as $arc)
+                                @php
+                                    $arcModel = \App\Models\StoryArc::where('comic_vine_id', $arc['id'])->first();
+                                @endphp
 
-                                <span class="badge badge-red">
-                                    {{ $arc['name'] }}
-                                </span>
-
-                            @endforeach
-
+                            @if ($arcModel)
+                                <a href="{{ route('story-arcs.show', $arcModel->id) }}"
+                                    class="badge badge-red"
+                                    style="text-decoration:none; transition: background 0.2s ease, border-color 0.2s ease;">
+                                        {{ $arc['name'] }}
+                                </a>
+                            @else
+                                <span class="badge badge-red">{{ $arc['name'] }}</span>
+                            @endif
+                             @endforeach
+                            </div>
                         </div>
-
-                    </div>
-
                 @endif
 
                 {{-- TEAMS --}}
