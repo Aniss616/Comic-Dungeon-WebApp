@@ -47,8 +47,8 @@ A comic book web application built with Laravel, powered by the [Comic Vine API]
 ## Installation
 
 ```bash
-git clone https://github.com/your-username/comic-dungeon.git
-cd comic-dungeon
+git clone https://github.com/Aniss616/Comic-Dungeon-WebApp.git
+cd Comic-Dungeon-WebApp
 composer install
 npm install
 cp .env.example .env
