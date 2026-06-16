@@ -311,7 +311,7 @@
                 @endif
 
                 {{-- TEAMS --}}
-                @if ($issue->teams && count($issue->teams) > 0)
+                @if ($linkedTeams->isNotEmpty())
 
                     <div class="mt-4">
 
@@ -329,12 +329,12 @@
 
                         <div class="flex flex-wrap gap-1">
 
-                            @foreach ($issue->teams as $team)
-
-                                <span class="badge badge-neutral">
-                                    {{ $team['name'] }}
-                                </span>
-
+                            @foreach($linkedTeams as $t)
+                                @if($t['team'])
+                                    <a href="{{ route('teams.show', $t['team']->id) }}" class="badge badge-amber">{{ $t['name'] }}</a>
+                                @else
+                                     <span class="badge badge-amber">{{ $t['name'] }}</span>
+                                @endif
                             @endforeach
 
                         </div>

@@ -236,31 +236,37 @@
             <div class="grid-3">
 
                 {{-- TEAMS --}}
-                @if ($character->teams && count($character->teams) > 0)
+                @if ($linkedTeams->isNotEmpty())
                     <div class="card" style="padding:1.5rem;">
                         <div class="section-heading" style="margin-bottom:1rem;">
                             <h3 class="section-title" style="font-size:1.1rem;">Teams</h3>
                         </div>
 
                         <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
-                            @foreach ($character->teams as $index => $team)
-                                <span class="badge badge-neutral{{ $index >= 5 ? ' sl-hidden' : '' }}"
+                            @foreach ($linkedTeams as $index => $t)
+                                @if ($t['team'])
+                                    <a href="{{ route('teams.show', $t['team']->id) }}"
+                                        class="badge badge-neutral{{ $index >= 5 ? ' sl-hidden' : '' }}"
+                                        data-group="team-extra">
+                                            {{ $t['name'] }}
+                                    </a>
+                                @else
+                                    <span class="badge badge-neutral{{ $index >= 5 ? ' sl-hidden' : '' }}"
                                       data-group="team-extra">
-                                    {{ $team['name'] }}
-                                </span>
+                                        {{ $t['name'] }}
+                                    </span>
+                                @endif
                             @endforeach
                         </div>
-
-                        @if (count($character->teams) > 5)
+                        @if ($linkedTeams->count() > 5)
                             <button onclick="toggleExtra('team-extra', this)"
                                     class="btn btn-ghost"
                                     style="margin-top:1rem;">
-                                Show {{ count($character->teams) - 5 }} more
+                                    Show {{ $linkedTeams->count() - 5 }} more
                             </button>
                         @endif
                     </div>
                 @endif
-
                 {{-- ALLIES --}}
                 @if ($character->character_friends && count($character->character_friends) > 0)
                     <div class="card" style="padding:1.5rem;">

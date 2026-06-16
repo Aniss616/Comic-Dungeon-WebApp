@@ -51,6 +51,7 @@
                     'volumes'    => 'Volumes',
                     'issues'     => 'Issues',
                     'arcs'       => 'Story Arcs',
+                    'teams'      => 'Teams',
                 ] as $key => $label)
 
                     <button
@@ -324,7 +325,62 @@
         @endif
 
     @endif
-
+    {{-- TEAMS --}}
+    @if ($tab === 'teams')
+        <style>
+            .team-card {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: 1.5rem;
+                text-decoration: none;
+                gap: 0.75rem;
+                transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+            }
+            .team-card:hover {
+                border-color: rgba(192, 57, 43, 0.45);
+                background: var(--sl-red-dim);
+                transform: translateY(-3px);
+            }
+        </style>
+        <div class="section-heading">
+            <h2 class="section-title">Teams</h2>
+            <div class="section-rule"></div>
+            @if($teams->count())
+                <span class="badge badge-red">
+                    {{ $teams->total() }} Results
+                </span>
+            @endif
+        </div>
+        @if ($teams->count() > 0)
+            <div class="grid-3">
+                @foreach ($teams as $team)
+                    <a href="{{ route('teams.show', $team->id) }}" class="card team-card">
+                        <div style="font-family:var(--font-display); font-size:1.15rem;
+                                    font-weight:800; text-transform:uppercase;
+                                    color:var(--sl-text); letter-spacing:0.04em; line-height:1.2;">
+                            {{ $team->name }}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                            <span class="badge badge-amber">
+                                {{ $team->characters_count }} {{ Str::plural('member', $team->characters_count) }}
+                            </span>
+                            <span class="badge badge-neutral">
+                                {{ $team->issues_count }} {{ Str::plural('issue', $team->issues_count) }}
+                            </span>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        @else
+            <div class="card" style="padding:4rem 2rem; text-align:center;">
+                <p class="text-muted">No teams found in the archive.</p>
+            </div>
+        @endif
+        @if ($teams->hasPages())
+            <div class="mt-4">{{ $teams->links() }}</div>
+        @endif
+    @endif
 </div>
 
 @endsection

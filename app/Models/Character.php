@@ -57,4 +57,9 @@ class Character extends Model
         return $this->belongsToMany(User::class, 'user_favourite_characters')
             ->withTimestamps();
     }
+
+    public function teamRecords()
+    {
+    return $this->belongsToMany(Team::class, 'character_team')->withTimestamps();
+    }
 }

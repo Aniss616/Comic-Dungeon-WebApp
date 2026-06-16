@@ -7,6 +7,7 @@ use App\Models\Character;
 use App\Models\Volume;
 use App\Models\Issue;
 use App\Models\StoryArc;
+use App\Models\Team;
 
 class ExploreController extends Controller
 {
@@ -14,12 +15,11 @@ class ExploreController extends Controller
     {
         $q   = request('q');
         $tab = request('tab', 'characters');
-
         $characters = collect();
         $volumes    = collect();
         $issues     = collect();
         $storyArcs  = collect();
-
+        $teams      = collect();
         if ($q) {
             if ($tab === 'characters') {
                 $characters = Character::where('name', 'like', "%$q%")
@@ -44,6 +44,12 @@ class ExploreController extends Controller
             } elseif ($tab === 'arcs') {
                 $storyArcs = StoryArc::where('name', 'like', "%$q%")
                     ->withCount('issues')
+                    ->orderBy('name')
+                    ->paginate(24)
+                    ->withQueryString();
+            } elseif ($tab === 'teams') {
+                $teams = Team::where('name', 'like', "%$q%")
+                    ->withCount(['characters', 'issues'])
                     ->orderBy('name')
                     ->paginate(24)
                     ->withQueryString();
@@ -72,11 +78,16 @@ class ExploreController extends Controller
                     ->inRandomOrder()
                     ->paginate(24)
                     ->withQueryString();
+            } elseif ($tab === 'teams') {
+                $teams = Team::withCount(['characters', 'issues'])
+                    ->having('issues_count', '>', 0)
+                    ->inRandomOrder()
+                    ->paginate(24)
+                    ->withQueryString();
             }
         }
-
         return view('explore.index', compact(
-            'characters', 'volumes', 'issues', 'storyArcs', 'q', 'tab'
+            'characters', 'volumes', 'issues', 'storyArcs', 'teams', 'q', 'tab'
         ));
     }
 }

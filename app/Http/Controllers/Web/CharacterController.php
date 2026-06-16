@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Character;
 use App\Traits\ParsesDescription;
+use App\Models\Team;
 
 class CharacterController extends Controller
 {
     use ParsesDescription;
+
     public function index()
     {
         $characters = Character::orderBy('name')
@@ -18,33 +20,36 @@ class CharacterController extends Controller
     }
 
     public function show(int $id)
-{
-    $character = Character::with('issues.volume')
-        ->findOrFail($id);
+    {
+        $character = Character::with('issues.volume')
+            ->findOrFail($id);
+        $issues = $character->issues->sortBy([
+            ['volume_id', 'asc'],
+            ['issue_number', 'asc'],
+        ])->values();
+        $firstAppearance = $character->issues
+            ->whereNotNull('cover_date')
+            ->sortBy('cover_date')
+            ->first() ?? $issues->first();
+        $bestStart = $issues->firstWhere('issue_number', 1) ?? $issues->first();
+        $descriptionSections = $character->description
+            ? $this->parseDescription($character->description)
+            : [];
 
-    $issues = $character->issues->sortBy([
-        ['volume_id', 'asc'],
-        ['issue_number', 'asc'],
-    ])->values();
+        $linkedTeams = collect($character->teams ?? [])
+            ->filter(fn ($t) => !empty($t['name']))
+            ->map(fn ($t) => [
+                'name' => $t['name'],
+                'team' => isset($t['id']) ? Team::where('comic_vine_id', $t['id'])->first() : null,
+            ]);
 
-    $firstAppearance = $character->issues
-        ->whereNotNull('cover_date')
-        ->sortBy('cover_date')
-        ->first() ?? $issues->first();
-
-    $bestStart = $issues->firstWhere('issue_number', 1) ?? $issues->first();
-
-    $descriptionSections = $character->description
-        ? $this->parseDescription($character->description)
-        : [];
-
-    return view('characters.show', compact(
-        'character',
-        'issues',
-        'firstAppearance',
-        'bestStart',
-        'descriptionSections'
-    ));
-}
-
+        return view('characters.show', compact(
+            'character',
+            'issues',
+            'firstAppearance',
+            'bestStart',
+            'descriptionSections',
+            'linkedTeams'
+        ));
+    }
 }

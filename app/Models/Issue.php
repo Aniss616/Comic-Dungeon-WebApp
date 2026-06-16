@@ -52,4 +52,9 @@ class Issue extends Model
     {
         return $this->belongsToMany(StoryArc::class, 'issue_story_arc')->withTimestamps();
     }
+
+    public function teamRecords()
+    {
+    return $this->belongsToMany(Team::class, 'issue_team')->withTimestamps();
+    }
 }
