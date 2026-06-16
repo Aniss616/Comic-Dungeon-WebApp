@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\ExploreController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\UserActionController;
 use App\Http\Controllers\Web\TeamController;
+use App\Http\Controllers\Web\LocationController;
 
 // Root
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -30,6 +31,7 @@ Route::get('/issues/{id}',     [IssueController::class, 'show'])->name('issues.s
 Route::get('/random-character', [App\Http\Controllers\Web\RandomController::class, 'randomCharacter'])->name('random.character');
 Route::get('/story-arcs/{storyArc}', [App\Http\Controllers\Web\StoryArcController::class, 'show'])->name('story-arcs.show');
 Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+Route::get('/locations/{location}', [LocationController::class, 'show'])->name('locations.show');
 
 // Admin only
 Route::middleware(['auth', 'admin'])->group(function () {

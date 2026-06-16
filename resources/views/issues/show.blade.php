@@ -344,36 +344,22 @@
                 @endif
 
                 {{-- LOCATIONS --}}
-                @if ($issue->locations && count($issue->locations) > 0)
-
+                @if ($linkedLocations->isNotEmpty())
                     <div class="mt-4">
-
-                        <div class="section-heading"
-                             style="margin-bottom:1rem;">
-
-                            <h3 class="section-title"
-                                style="font-size:1rem;">
-                                Locations
-                            </h3>
-
+                        <div class="section-heading" style="margin-bottom:1rem;">
+                            <h3 class="section-title" style="font-size:1rem;">Locations</h3>
                             <div class="section-rule"></div>
-
                         </div>
-
                         <div class="flex flex-wrap gap-1">
-
-                            @foreach ($issue->locations as $location)
-
-                                <span class="badge badge-amber">
-                                    {{ $location['name'] }}
-                                </span>
-
+                            @foreach($linkedLocations as $l)
+                                @if($l['location'])
+                                    <a href="{{ route('locations.show', $l['location']->id) }}" class="badge badge-amber">{{ $l['name'] }}</a>
+                                @else
+                        <span class="badge badge-amber">{{ $l['name'] }}</span>
+                                @endif
                             @endforeach
-
                         </div>
-
                     </div>
-
                 @endif
 
             </div>

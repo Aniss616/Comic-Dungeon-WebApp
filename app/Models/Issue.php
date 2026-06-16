@@ -57,4 +57,10 @@ class Issue extends Model
     {
     return $this->belongsToMany(Team::class, 'issue_team')->withTimestamps();
     }
+
+    
+    public function locationRecords()
+    {
+    return $this->belongsToMany(Location::class, 'issue_location')->withTimestamps();
+    }
 }

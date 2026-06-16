@@ -8,6 +8,7 @@ use App\Models\Volume;
 use App\Models\Issue;
 use App\Models\StoryArc;
 use App\Models\Team;
+use App\Models\Location;
 
 class ExploreController extends Controller
 {
@@ -20,6 +21,7 @@ class ExploreController extends Controller
         $issues     = collect();
         $storyArcs  = collect();
         $teams      = collect();
+        $locations = collect();
         if ($q) {
             if ($tab === 'characters') {
                 $characters = Character::where('name', 'like', "%$q%")
@@ -53,8 +55,14 @@ class ExploreController extends Controller
                     ->orderBy('name')
                     ->paginate(24)
                     ->withQueryString();
+            }elseif ($tab === 'locations') {
+                $locations = Location::where('name', 'like', "%$q%")
+                    ->withCount('issues')
+                    ->orderBy('name')
+                    ->paginate(24)
+                    ->withQueryString();
             }
-        } else {
+            }else {
             if ($tab === 'characters') {
                 $characters = Character::whereNotNull('image')
                     ->inRandomOrder()
@@ -84,10 +92,16 @@ class ExploreController extends Controller
                     ->inRandomOrder()
                     ->paginate(24)
                     ->withQueryString();
+            }elseif ($tab === 'locations') {
+                $locations = Location::withCount('issues')
+                    ->having('issues_count', '>', 0)
+                    ->inRandomOrder()
+                    ->paginate(24)
+                    ->withQueryString();
             }
         }
         return view('explore.index', compact(
-            'characters', 'volumes', 'issues', 'storyArcs', 'teams', 'q', 'tab'
+            'characters', 'volumes', 'issues', 'storyArcs', 'teams', 'q', 'tab', 'locations'
         ));
     }
 }

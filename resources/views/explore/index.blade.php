@@ -52,6 +52,7 @@
                     'issues'     => 'Issues',
                     'arcs'       => 'Story Arcs',
                     'teams'      => 'Teams',
+                    'locations'  => 'Locations',
                 ] as $key => $label)
 
                     <button
@@ -379,6 +380,57 @@
         @endif
         @if ($teams->hasPages())
             <div class="mt-4">{{ $teams->links() }}</div>
+        @endif
+    @endif
+    {{-- LOCATIONS --}}
+    @if ($tab === 'locations')
+        <style>
+            .location-card {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: 1.5rem;
+                text-decoration: none;
+                gap: 0.75rem;
+                transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+            }
+            .location-card:hover {
+                border-color: rgba(192, 57, 43, 0.45);
+                background: var(--sl-red-dim);
+                transform: translateY(-3px);
+            }
+        </style>
+        <div class="section-heading">
+            <h2 class="section-title">Locations</h2>
+            <div class="section-rule"></div>
+            @if($locations->count())
+                <span class="badge badge-red">{{ $locations->total() }} Results</span>
+            @endif
+        </div>
+        @if ($locations->count() > 0)
+            <div class="grid-3">
+                @foreach ($locations as $location)
+                    <a href="{{ route('locations.show', $location->id) }}" class="card location-card">
+                        <div style="font-family:var(--font-display); font-size:1.15rem;
+                                    font-weight:800; text-transform:uppercase;
+                                    color:var(--sl-text); letter-spacing:0.04em; line-height:1.2;">
+                            {{ $location->name }}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span class="badge badge-amber">
+                                {{ $location->issues_count }} {{ Str::plural('issue', $location->issues_count) }}
+                            </span>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        @else
+            <div class="card" style="padding:4rem 2rem; text-align:center;">
+                <p class="text-muted">No locations found in the archive.</p>
+            </div>
+        @endif
+        @if ($locations->hasPages())
+            <div class="mt-4">{{ $locations->links() }}</div>
         @endif
     @endif
 </div>
