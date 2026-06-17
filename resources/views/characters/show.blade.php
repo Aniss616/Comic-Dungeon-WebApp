@@ -202,7 +202,7 @@
             <div class="card" style="padding:1.5rem;">
                 <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
                     @foreach ($character->powers as $index => $power)
-                        <span class="badge badge-red{{ $index >= 8 ? ' sl-hidden' : '' }}"
+                        <span class="badge badge-red{{ $index >= 14 ? ' sl-hidden' : '' }}"
                               data-group="power-extra"
                               style="padding:0.45rem 0.8rem;">
                             {{ $power }}
@@ -210,11 +210,11 @@
                     @endforeach
                 </div>
 
-                @if (count($character->powers) > 8)
-                    <button onclick="toggleExtra('power-extra', this)"
+                @if (count($character->powers) > 14)
+                    <button onclick="toggleExtra('power-extra', this, 14)"
                             class="btn btn-ghost"
                             style="margin-top:1rem;">
-                        Show {{ count($character->powers) - 8 }} more
+                        Show {{ count($character->powers) - 14 }} more
                     </button>
                 @endif
             </div>
