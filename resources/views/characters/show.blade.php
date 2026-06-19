@@ -6,6 +6,17 @@
 
 <style>
     .sl-hidden { display: none !important; }
+    .issue-link {
+    display: block;
+    color: var(--sl-text);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.25s ease;
+    }
+
+    .issue-link:hover {
+    color: var(--sl-red);
+    }
 </style>
 
 <div style="display:flex; flex-direction:column; gap:2rem;">
@@ -151,7 +162,7 @@
                             </div>
 
                             <a href="{{ route('issues.show', $firstAppearance->id) }}"
-                               style="display:block; color:var(--sl-text); text-decoration:none; font-weight:600;">
+                            class="issue-link">
                                 {{ $firstAppearance->name ?? 'Untitled' }}
                                 #{{ $firstAppearance->issue_number ?? '?' }}
                             </a>
@@ -171,7 +182,7 @@
                             </div>
 
                             <a href="{{ route('issues.show', $bestStart->id) }}"
-                               style="display:block; color:var(--sl-text); text-decoration:none; font-weight:600;">
+                               class="issue-link">
                                 {{ $bestStart->name ?? 'Untitled' }}
                                 #{{ $bestStart->issue_number ?? '?' }}
                             </a>

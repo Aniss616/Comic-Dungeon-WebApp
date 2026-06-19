@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
+    <link rel="preload" as="image" href="{{ asset('images/CD-SL-Logo.png') }}">
     <style>
         :root {
             --sl-black:      #0D0D0D;
@@ -18,7 +18,7 @@
             --sl-raised:     #1C1C22;
             --sl-border:     rgba(255,255,255,0.06);
             --sl-border-md:  rgba(255,255,255,0.11);
-            --sl-red:        #C0392B;
+            --sl-red:        #c9011d;
             --sl-red-dim:    rgba(192,57,43,0.12);
             --sl-amber:      #D4832A;
             --sl-amber-dim:  rgba(212,131,42,0.10);
@@ -95,15 +95,6 @@
         }
 
         .navbar-logo:hover { color: var(--sl-red); }
-
-        .navbar-logo-mark {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: var(--sl-red);
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
 
         .navbar-nav {
             display: flex;
@@ -310,6 +301,35 @@
         .mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; } .mt-3 { margin-top: 1.5rem; } .mt-4 { margin-top: 2rem; }
         .mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; } .mb-3 { margin-bottom: 1.5rem; }
         .w-full { width: 100%; }
+.navbar-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    width: 46px;
+    height: 46px;
+
+    font-size: 0;
+    line-height: 0;
+
+    overflow: hidden;
+    text-decoration: none;
+}
+
+
+.navbar-logo-img {
+    width: 46px;
+    height: 46px;
+    display: block;
+    object-fit: contain;
+
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.navbar-logo:hover .navbar-logo-img {
+    transform: scale(1.05);
+}
     </style>
     @stack('styles')
 </head>
@@ -320,9 +340,17 @@
         <nav class="navbar">
             <div class="navbar-inner">
 
-                <a href="{{ route('home') }}" class="navbar-logo">
-                    <span class="navbar-logo-mark"></span>
-                    Comic Dungeon
+               <a href="{{ route('home') }}" class="navbar-logo">
+                <img
+                    src="{{ asset('images/CD-SL-Logo.png') }}"
+                    alt="Comic Dungeon"
+                    class="navbar-logo-img"
+                    width="46"
+                    height="46"
+                    loading="eager"
+                    decoding="sync"
+                    fetchpriority="high"
+                />
                 </a>
 
                 <div class="navbar-nav">

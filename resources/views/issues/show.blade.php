@@ -4,6 +4,33 @@
 
 @section('content')
 
+<style> 
+    .btn-fav {
+    background: var(--sl-amber);
+    color: var(--sl-text);
+    border: 1px solid rgba(212, 131, 42, 0.25);
+    transition: all 0.2s ease;
+    }
+
+    .btn-fav:hover {
+    background: #f49f43;
+    border: 1px solid rgba(212, 131, 42, 0.35);
+    }
+
+    .btn-read {
+    background: var(--sl-muted);
+    color: var(--sl-text);
+    border: 1px solid rgba(212, 131, 42, 0.25);
+    transition: all 0.2s ease;
+    }
+
+    .btn-read:hover {
+    background: #847f79;
+    border: 1px solid rgba(212, 131, 42, 0.35);
+    }
+
+</style>
+
 <div class="space-y-8">
 
     {{-- BACK --}}
@@ -127,7 +154,7 @@
                         <button
                             id="readBtn"
                             onclick="toggleRead({{ $issue->id }})"
-                            class="btn {{ $isRead ? 'btn-primary' : 'btn-ghost' }}"
+                            class="btn {{ $isRead ? 'btn-read' : 'btn-ghost' }}"
                             style="
                                 width:100%;
                                 justify-content:center;
@@ -138,7 +165,7 @@
                         <button
                             id="favBtn"
                             onclick="toggleFavouriteIssue({{ $issue->id }})"
-                            class="btn {{ $isFavourite ? 'btn-primary' : 'btn-ghost' }}"
+                            class="btn {{ $isFavourite ? 'btn-fav' : 'btn-ghost' }}"
                             style="
                                 width:100%;
                                 justify-content:center;
@@ -606,7 +633,7 @@
         if (data.status === 'read') {
 
             btn.textContent = 'Read';
-            btn.className = 'btn btn-primary';
+            btn.className = 'btn btn-read';
             btn.style.width = '100%';
             btn.style.justifyContent = 'center';
 
@@ -636,7 +663,7 @@
         if (data.status === 'favourited') {
 
             btn.textContent = 'Favourited';
-            btn.className = 'btn btn-primary';
+            btn.className = 'btn btn-fav';
             btn.style.width = '100%';
             btn.style.justifyContent = 'center';
 

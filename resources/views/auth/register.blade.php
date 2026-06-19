@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Comic Dungeon – Register</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/CD-logo.ico') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -29,24 +30,12 @@
     <div class="w-full max-w-md relative z-10">
 
         {{-- LOGO --}}
-        <div class="text-center mb-10">
-            <div class="inline-flex items-center gap-3 mb-4">
-                <span class="w-2 h-2 rounded-full bg-[#C0392B]"></span>
-
-                <h1
-                    class="uppercase tracking-[0.18em] text-5xl"
-                    style="
-                        font-family:'Barlow Condensed',sans-serif;
-                        font-weight:800;
-                    "
-                >
-                    Comic Dungeon
-                </h1>
-            </div>
-
-            <p class="text-sm text-[rgba(232,228,220,0.45)] tracking-wide">
-                Create your reader account
-            </p>
+        <div class="flex items-center justify-center gap-3 mb-4">
+                <img
+                    src="{{ asset('images/CD-SL-Logo.png') }}"
+                    alt="Comic Dungeon Logo"
+                    class="w-28 h-28 object-contain"
+                />
         </div>
 
         {{-- CARD --}}
@@ -195,13 +184,14 @@
                     type="submit"
                     class="w-full py-3 rounded-lg uppercase tracking-[0.14em] text-sm transition"
                     style="
-                        background:#C0392B;
+                        background:#c9011d;
                         color:white;
                         font-family:'Barlow Condensed',sans-serif;
                         font-weight:700;
+                        cursor:pointer;
                     "
                     onmouseover="this.style.background='#d44030'"
-                    onmouseout="this.style.background='#C0392B'"
+                    onmouseout="this.style.background='#c9011d'"
                 >
                     Create Account
                 </button>
