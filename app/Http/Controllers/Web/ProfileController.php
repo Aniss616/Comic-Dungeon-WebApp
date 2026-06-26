@@ -3,26 +3,220 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\Issue;
+use App\Models\UserList;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
-    public function index()
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $year = (int) $request->query('year', now()->year);
+
+        // Sidebar counts
+        $readsCount    = $user->reads()->count();
+        $favsCount     = $user->favourites()->count();
+        $favCharsCount = $user->favouriteCharacters()->count();
+        $wishlistCount = $user->wishlist()->count();
+        $listsCount    = $user->lists()->count();
+
+        // Heatmap
+        $dateStart = ($year === now()->year)
+            ? now()->subDays(365)->toDateString()
+            : "{$year}-01-01";
+        $dateEnd = ($year === now()->year)
+            ? now()->toDateString()
+            : "{$year}-12-31";
+
+        $heatmapRaw = DB::table('user_reads')
+            ->where('user_id', $user->id)
+            ->whereBetween(DB::raw('DATE(read_date)'), [$dateStart, $dateEnd])
+            ->selectRaw('DATE(read_date) as day, COUNT(*) as cnt')
+            ->groupBy('day')
+            ->pluck('cnt', 'day');
+
+        // Tooltip: up to 3 issues per day
+        $tooltipRaw = DB::table('user_reads')
+            ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
+            ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
+            ->where('user_reads.user_id', $user->id)
+            ->whereBetween(DB::raw('DATE(user_reads.read_date)'), [$dateStart, $dateEnd])
+            ->selectRaw('DATE(user_reads.read_date) as day, issues.name as issue_name, volumes.name as vol_name, user_reads.read_date')
+            ->orderBy('user_reads.read_date', 'desc')
+            ->get()
+            ->groupBy('day')
+            ->map(fn($rows) => $rows->take(3)->values());
+
+        // Activity feed
+        $reads = DB::table('user_reads')
+            ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
+            ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
+            ->where('user_reads.user_id', $user->id)
+            ->selectRaw("'read' as type, issues.id as issue_id, issues.name as issue_name, volumes.name as vol_name, user_reads.read_date as event_at");
+
+        $favs = DB::table('user_favourites')
+            ->join('issues', 'user_favourites.issue_id', '=', 'issues.id')
+            ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
+            ->where('user_favourites.user_id', $user->id)
+            ->selectRaw("'fav' as type, issues.id as issue_id, issues.name as issue_name, volumes.name as vol_name, user_favourites.favourite_date as event_at");
+
+        $activity = DB::table($reads->union($favs), 'activity')
+            ->orderBy('event_at', 'desc')
+            ->limit(60)
+            ->get();
+
+        $activity->transform(function ($item) {
+            $item->event_at = \Carbon\Carbon::parse($item->event_at, 'UTC');
+            return $item;
+        });
+
+        // Stats — characters
+        $statCharacters = DB::table('user_reads')
+            ->join('issue_characters', 'user_reads.issue_id', '=', 'issue_characters.issue_id')
+            ->join('characters', 'issue_characters.character_id', '=', 'characters.id')
+            ->where('user_reads.user_id', $user->id)
+            ->selectRaw('characters.id, characters.name, characters.image, COUNT(*) as read_count')
+            ->groupBy('characters.id', 'characters.name', 'characters.image')
+            ->orderByDesc('read_count')
+            ->limit(10)
+            ->get();
+
+        $favCharIds = $user->favouriteCharacters()->pluck('characters.id')->flip();
+        $statCharacters->each(function ($c) use ($favCharIds) {
+            $c->is_fav = $favCharIds->has($c->id);
+        });
+
+        // Stats — volumes
+        $statVolumes = DB::table('user_reads')
+            ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
+            ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
+            ->where('user_reads.user_id', $user->id)
+            ->selectRaw('volumes.id, volumes.name, volumes.cover_image, COUNT(*) as read_count')
+            ->groupBy('volumes.id', 'volumes.name', 'volumes.cover_image')
+            ->orderByDesc('read_count')
+            ->limit(10)
+            ->get();
+
+        $favCountByVolume = DB::table('user_favourites')
+            ->join('issues', 'user_favourites.issue_id', '=', 'issues.id')
+            ->where('user_favourites.user_id', $user->id)
+            ->selectRaw('issues.volume_id, COUNT(*) as fav_count')
+            ->groupBy('issues.volume_id')
+            ->pluck('fav_count', 'volume_id');
+
+        $statVolumes->each(function ($v) use ($favCountByVolume) {
+            $v->is_fav = ($favCountByVolume->get($v->id, 0) >= 5);
+        });
+
+        // Wishlist
+        $wishlist = $user->wishlist()
+            ->with('volume')
+            ->orderByPivot('added_at', 'desc')
+            ->get();
+
+        // Lists
+        $userLists = $user->lists()
+            ->withCount('issues')
+            ->with(['issues' => fn($q) => $q->limit(3)])
+            ->latest()
+            ->get();
+
+        // Available years
+        $availableYears = DB::table('user_reads')
+            ->where('user_id', $user->id)
+            ->selectRaw('YEAR(read_date) as yr')
+            ->groupBy('yr')
+            ->orderByDesc('yr')
+            ->pluck('yr');
+
+        return view('profile.index', [
+            'user'           => $user,
+            'year'           => $year,
+            'readsCount'     => $readsCount,
+            'favsCount'      => $favsCount,
+            'favCharsCount'  => $favCharsCount,
+            'wishlistCount'  => $wishlistCount,
+            'listsCount'     => $listsCount,
+            'heatmapRaw'     => $heatmapRaw,
+            'tooltipRaw'     => $tooltipRaw,
+            'activity'       => $activity,
+            'statCharacters' => $statCharacters,
+            'statVolumes'    => $statVolumes,
+            'wishlist'       => $wishlist,
+            'userLists'      => $userLists,
+            'availableYears' => $availableYears,
+        ]);
+    }
+
+    public function stats()
     {
         $user = Auth::user();
 
-        $favouriteCharacters = $user->favouriteCharacters()->get();
-
-        $readIssues = $user->reads()
-            ->with('volume')
-            ->orderByPivot('read_date', 'desc')
+        $allCharacters = DB::table('user_reads')
+            ->join('issue_characters', 'user_reads.issue_id', '=', 'issue_characters.issue_id')
+            ->join('characters', 'issue_characters.character_id', '=', 'characters.id')
+            ->where('user_reads.user_id', $user->id)
+            ->selectRaw('characters.id, characters.name, characters.image, COUNT(*) as read_count')
+            ->groupBy('characters.id', 'characters.name', 'characters.image')
+            ->orderByDesc('read_count')
             ->get();
 
-        $favouriteIssues = $user->favourites()
-            ->with('volume')
-            ->orderByPivot('favourite_date', 'desc')
+        $favCharIds = $user->favouriteCharacters()->pluck('characters.id')->flip();
+        $allCharacters->each(function ($c) use ($favCharIds) {
+            $c->is_fav = $favCharIds->has($c->id);
+        });
+
+        $allVolumes = DB::table('user_reads')
+            ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
+            ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
+            ->where('user_reads.user_id', $user->id)
+            ->selectRaw('volumes.id, volumes.name, volumes.cover_image, COUNT(*) as read_count')
+            ->groupBy('volumes.id', 'volumes.name', 'volumes.cover_image')
+            ->orderByDesc('read_count')
             ->get();
 
-        return view('profile.index', compact('user', 'favouriteCharacters', 'readIssues', 'favouriteIssues'));
+        $favCountByVolume = DB::table('user_favourites')
+            ->join('issues', 'user_favourites.issue_id', '=', 'issues.id')
+            ->where('user_favourites.user_id', $user->id)
+            ->selectRaw('issues.volume_id, COUNT(*) as fav_count')
+            ->groupBy('issues.volume_id')
+            ->pluck('fav_count', 'volume_id');
+
+        $allVolumes->each(function ($v) use ($favCountByVolume) {
+            $v->is_fav = ($favCountByVolume->get($v->id, 0) >= 5);
+        });
+
+        return view('profile.stats', [
+            'user'          => $user,
+            'allCharacters' => $allCharacters,
+            'allVolumes'    => $allVolumes,
+        ]);
+    }
+
+    public function toggleWishlist(Request $request, Issue $issue)
+    {
+        $user   = Auth::user();
+        $exists = $user->wishlist()->where('issue_id', $issue->id)->exists();
+
+        if ($exists) {
+            $user->wishlist()->detach($issue->id);
+            $status = 'removed';
+        } else {
+            $user->wishlist()->attach($issue->id, ['added_at' => now()]);
+            $status = 'added';
+        }
+
+        return response()->json(['status' => $status]);
+    }
+
+    public function storeList(Request $request)
+    {
+        $request->validate(['name' => 'required|string|max:100']);
+        $list = Auth::user()->lists()->create(['name' => $request->name]);
+        return response()->json(['id' => $list->id, 'name' => $list->name]);
     }
 }

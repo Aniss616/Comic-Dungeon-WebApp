@@ -19,9 +19,7 @@ class UserActionController extends Controller
             $user->reads()->detach($issueId);
             $status = 'unread';
         } else {
-            $user->reads()->attach($issueId, [
-                'read_date' => now()->toDateString(),
-            ]);
+            $user->reads()->attach($issue->id, ['read_date' => now()]);
             $status = 'read';
         }
 
@@ -38,9 +36,7 @@ class UserActionController extends Controller
             $user->favourites()->detach($issueId);
             $status = 'unfavourited';
         } else {
-            $user->favourites()->attach($issueId, [
-                'favourite_date' => now()->toDateString(),
-            ]);
+            $user->favourites()->attach($issue->id, ['favourite_date' => now()]);
             $status = 'favourited';
         }
 

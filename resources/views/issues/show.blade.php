@@ -135,54 +135,50 @@
 
                 {{-- USER ACTIONS --}}
                 @auth
-
                     @php
                         $isRead = Auth::user()
                             ->reads()
                             ->where('issue_id', $issue->id)
                             ->exists();
-
                         $isFavourite = Auth::user()
                             ->favourites()
                             ->where('issue_id', $issue->id)
                             ->exists();
+                        $isWishlisted = Auth::user()
+                            ->wishlist()
+                            ->where('issue_id', $issue->id)
+                            ->exists();
                     @endphp
-
                     <div class="mt-2 flex flex-wrap"
                          style="gap:0.75rem;">
-
                         <button
                             id="readBtn"
                             onclick="toggleRead({{ $issue->id }})"
                             class="btn {{ $isRead ? 'btn-read' : 'btn-ghost' }}"
-                            style="
-                                width:100%;
-                                justify-content:center;
-                            ">
+                            style="width:100%;justify-content:center;">
                             {{ $isRead ? 'Read' : 'Mark as Read' }}
                         </button>
-
                         <button
                             id="favBtn"
                             onclick="toggleFavouriteIssue({{ $issue->id }})"
                             class="btn {{ $isFavourite ? 'btn-fav' : 'btn-ghost' }}"
-                            style="
-                                width:100%;
-                                justify-content:center;
-                            ">
+                            style="width:100%;justify-content:center;">
                             {{ $isFavourite ? 'Favourited' : 'Favourite' }}
                         </button>
-
+                        <button
+                            id="wishlistBtn"
+                            onclick="toggleWishlist({{ $issue->id }})"
+                            class="btn {{ $isWishlisted ? 'btn-primary' : 'btn-ghost' }}"
+                            style="width:100%;justify-content:center;">
+                            {{ $isWishlisted ? 'On Wishlist' : 'Add to Wishlist' }}
+                        </button>
                     </div>
-
                 @else
-
                     <a href="{{ route('login') }}"
                        class="section-link"
                        style="display:block; margin-top:1rem;">
                         Sign in to track this issue
                     </a>
-
                 @endauth
 
             </div>
@@ -674,6 +670,33 @@
             btn.style.width = '100%';
             btn.style.justifyContent = 'center';
         }
+    }
+
+    function toggleWishlist(issueId) {
+        const btn = document.getElementById('wishlistBtn');
+        btn.disabled = true;
+
+        fetch(`/profile/wishlist/${issueId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'added') {
+                btn.textContent = 'On Wishlist';
+                btn.classList.remove('btn-ghost');
+                btn.classList.add('btn-primary');
+            } else {
+                btn.textContent = 'Add to Wishlist';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-ghost');
+            }
+            btn.disabled = false;
+        })
+        .catch(() => { btn.disabled = false; });
     }
 
 </script>

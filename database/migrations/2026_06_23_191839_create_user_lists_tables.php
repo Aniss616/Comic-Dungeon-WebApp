@@ -11,13 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('user_reads', function (Blueprint $table) {
+        Schema::create('user_lists', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('issue_id')->constrained()->cascadeOnDelete();
-            $table->timestamp('read_date')->useCurrent();
+            $table->string('name');
             $table->timestamps();
-            $table->unique(['user_id', 'issue_id']);
+        });
+
+        Schema::create('user_list_issues', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_list_id')->constrained('user_lists')->cascadeOnDelete();
+            $table->foreignId('issue_id')->constrained()->cascadeOnDelete();
+            $table->unsignedSmallInteger('sort_order')->default(0);
+            $table->timestamps();
+            $table->unique(['user_list_id', 'issue_id']);
         });
     }
 
@@ -26,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_reads');
+        Schema::dropIfExists('user_lists_tables');
     }
 };

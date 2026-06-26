@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\UserList;
 
 class User extends Authenticatable
 {
@@ -40,5 +41,19 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Character::class, 'user_favourite_characters')
                     ->withTimestamps();
+    }
+
+    public function wishlist() {
+        return $this->belongsToMany(Issue::class, 'user_wishlists')
+            ->withPivot('added_at')->withTimestamps();
+    }
+
+    public function lists() {
+        return $this->hasMany(\App\Models\UserList::class);
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->attributes['display_name'] ?? $this->username;
     }
 }

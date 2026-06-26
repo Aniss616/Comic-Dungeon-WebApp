@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_favourite_characters', function (Blueprint $table) {
+        Schema::create('user_pinned_volumes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('character_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('volume_id')->constrained()->cascadeOnDelete();
+            $table->unsignedTinyInteger('position');
             $table->timestamps();
-            $table->unique(['user_id', 'character_id']);
+            $table->unique(['user_id', 'position']);
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_favourite_characters');
+        Schema::dropIfExists('user_pinned_volumes');
     }
 };
