@@ -64,6 +64,13 @@ class ProfileController extends Controller
             ->where('user_favourites.user_id', $user->id)
             ->selectRaw("'fav' as type, issues.id as issue_id, issues.name as issue_name, volumes.name as vol_name, user_favourites.favourite_date as event_at");
 
+        $pinnedVolumes = DB::table('user_pinned_volumes')
+            ->join('volumes', 'user_pinned_volumes.volume_id', '=', 'volumes.id')
+            ->where('user_pinned_volumes.user_id', $user->id)
+            ->orderBy('user_pinned_volumes.position')
+            ->select('volumes.id', 'volumes.name', 'volumes.cover_image', 'user_pinned_volumes.position')
+            ->get();
+
         $activity = DB::table($reads->union($favs), 'activity')
             ->orderBy('event_at', 'desc')
             ->limit(60)
@@ -149,6 +156,7 @@ class ProfileController extends Controller
             'wishlist'       => $wishlist,
             'userLists'      => $userLists,
             'availableYears' => $availableYears,
+            'pinnedVolumes' => $pinnedVolumes,
         ]);
     }
 

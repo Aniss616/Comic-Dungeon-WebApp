@@ -719,7 +719,7 @@
             <div class="profile-username">&#64;{{ $user->username }}</div>
         </div>
 
-        <a href="#" class="profile-edit-btn">Edit Profile</a>
+        <a href="{{ route('settings') }}" class="profile-edit-btn">Edit Profile</a>
 
         <hr class="sidebar-divider">
 
@@ -769,22 +769,34 @@
             {{-- ══════════════════════════════════════════════════════
                  OVERVIEW TAB
             ══════════════════════════════════════════════════════ --}}
-            <div class="tab-panel active" id="panel-overview">
-
-                {{-- Pinned volumes --}}
-                <div class="p-section-gap">
-                    <div class="p-section-label">Pinned Volumes</div>
+            <div class="p-section-gap">
+                <div class="p-section-label">Pinned Volumes</div>
                     <div class="pinned-grid">
-                        {{-- Placeholder slots — replace with real user setting when implemented --}}
-                        @for($i = 0; $i < 4; $i++)
-                        <div class="cover-card" style="opacity:0.4; cursor:default;">
-                            <div class="cover-card-img cover-card-placeholder">
-                                <span style="font-family:var(--font-display);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--sl-faint);">Pin a volume</span>
-                            </div>
-                            <div class="cover-card-body">
-                                <div class="cover-card-title" style="color:var(--sl-faint);">—</div>
-                            </div>
-                        </div>
+                        @for($pos = 0; $pos < 4; $pos++)
+                            @php $vol = $pinnedVolumes->firstWhere('position', $pos); @endphp
+                                @if($vol)
+                                    <a href="{{ route('volumes.show', $vol->id) }}" class="cover-card">
+                                        <div class="cover-card-img">
+                                            @if($vol->cover_image)
+                                                <img src="{{ $vol->cover_image }}" alt="{{ $vol->name }}" style="width:100%;height:100%;object-fit:cover;">
+                                            @else
+                                                <div class="cover-card-placeholder">{{ strtoupper(substr($vol->name, 0, 2)) }}</div>
+                                            @endif
+                                        </div>
+                                        <div class="cover-card-body">
+                                            <div class="cover-card-title">{{ $vol->name }}</div>
+                                        </div>
+                                    </a>
+                                @else
+                                    <a href="{{ route('settings') }}" class="cover-card" style="opacity:0.35;">
+                                        <div class="cover-card-img cover-card-placeholder">
+                                            <span style="font-family:var(--font-display);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--sl-faint);">Pin a volume</span>
+                                        </div>
+                                        <div class="cover-card-body">
+                                            <div class="cover-card-title" style="color:var(--sl-faint);">—</div>
+                                        </div>
+                                    </a>
+                                @endif
                         @endfor
                     </div>
                 </div>

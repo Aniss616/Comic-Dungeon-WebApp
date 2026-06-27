@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\UserActionController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\LocationController;
+use App\Http\Controllers\Web\SettingsController;
 
 // Root
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -48,8 +49,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/issues/{id}/favourite',         [UserActionController::class, 'toggleFavouriteIssue'])->name('issues.toggleFavourite');
     Route::post('/characters/{id}/favourite',     [UserActionController::class, 'toggleFavouriteCharacter'])->name('characters.toggleFavourite');
     Route::post('/profile/pin-volume', [ProfileController::class, 'pinVolume'])->name('profile.pin.volume');
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
-    Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings',                  [SettingsController::class, 'index'])->name('settings');
+    Route::patch('/settings',                [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings/volumes/search',   [SettingsController::class, 'searchVolumes'])->name('settings.volumes.search');
+    Route::post('/settings/volumes/pin',     [SettingsController::class, 'pinVolume'])->name('settings.volumes.pin');
+    Route::post('/settings/volumes/unpin',   [SettingsController::class, 'unpinVolume'])->name('settings.volumes.unpin');
     Route::get('/profile/lists/{list}', [ProfileController::class, 'showList'])->name('profile.lists.show');
     Route::post('/profile/lists/{list}/issues', [ProfileController::class, 'addIssueToList'])->name('profile.lists.issues.add');
     Route::delete('/profile/lists/{list}/issues/{issue}', [ProfileController::class, 'removeIssueFromList'])->name('profile.lists.issues.remove');
