@@ -17,14 +17,14 @@ class ProfileController extends Controller
         $user = Auth::user();
         $year = (int) $request->query('year', now()->year);
 
-        // Sidebar counts
+        // ── Sidebar counts ──────────────────────────────────────────────
         $readsCount    = $user->reads()->count();
         $favsCount     = $user->favourites()->count();
         $favCharsCount = $user->favouriteCharacters()->count();
         $wishlistCount = $user->wishlist()->count();
         $listsCount    = $user->lists()->count();
 
-        // Heatmap
+        // ── Heatmap ─────────────────────────────────────────────────────
         $dateStart = ($year === now()->year)
             ? now()->subDays(365)->toDateString()
             : "{$year}-01-01";
@@ -39,7 +39,6 @@ class ProfileController extends Controller
             ->groupBy('day')
             ->pluck('cnt', 'day');
 
-        // Tooltip: up to 3 issues per day
         $tooltipRaw = DB::table('user_reads')
             ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
             ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
@@ -51,7 +50,7 @@ class ProfileController extends Controller
             ->groupBy('day')
             ->map(fn($rows) => $rows->take(3)->values());
 
-        // Activity feed
+        // ── Activity feed ────────────────────────────────────────────────
         $reads = DB::table('user_reads')
             ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
             ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
@@ -64,13 +63,6 @@ class ProfileController extends Controller
             ->where('user_favourites.user_id', $user->id)
             ->selectRaw("'fav' as type, issues.id as issue_id, issues.name as issue_name, volumes.name as vol_name, user_favourites.favourite_date as event_at");
 
-        $pinnedVolumes = DB::table('user_pinned_volumes')
-            ->join('volumes', 'user_pinned_volumes.volume_id', '=', 'volumes.id')
-            ->where('user_pinned_volumes.user_id', $user->id)
-            ->orderBy('user_pinned_volumes.position')
-            ->select('volumes.id', 'volumes.name', 'volumes.cover_image', 'user_pinned_volumes.position')
-            ->get();
-
         $activity = DB::table($reads->union($favs), 'activity')
             ->orderBy('event_at', 'desc')
             ->limit(60)
@@ -81,7 +73,7 @@ class ProfileController extends Controller
             return $item;
         });
 
-        // Stats — characters
+        // ── Stats — characters ───────────────────────────────────────────
         $statCharacters = DB::table('user_reads')
             ->join('issue_characters', 'user_reads.issue_id', '=', 'issue_characters.issue_id')
             ->join('characters', 'issue_characters.character_id', '=', 'characters.id')
@@ -93,17 +85,18 @@ class ProfileController extends Controller
             ->get();
 
         $favCharIds = $user->favouriteCharacters()->pluck('characters.id')->flip();
-        $statCharacters->each(function ($c) use ($favCharIds) {
+        $statCharacters = $statCharacters->map(function ($c) use ($favCharIds) {
             $c->is_fav = $favCharIds->has($c->id);
+            return $c;
         });
 
-        // Stats — volumes
+        // ── Stats — volumes ──────────────────────────────────────────────
         $statVolumes = DB::table('user_reads')
             ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
             ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
             ->where('user_reads.user_id', $user->id)
-            ->selectRaw('volumes.id, volumes.name, volumes.cover_image, COUNT(*) as read_count')
-            ->groupBy('volumes.id', 'volumes.name', 'volumes.cover_image')
+            ->selectRaw('volumes.id, volumes.name, volumes.cover_image, volumes.count_of_issues, COUNT(*) as read_count')
+            ->groupBy('volumes.id', 'volumes.name', 'volumes.cover_image', 'volumes.count_of_issues')
             ->orderByDesc('read_count')
             ->limit(10)
             ->get();
@@ -115,9 +108,18 @@ class ProfileController extends Controller
             ->groupBy('issues.volume_id')
             ->pluck('fav_count', 'volume_id');
 
-        $statVolumes->each(function ($v) use ($favCountByVolume) {
+        $statVolumes = $statVolumes->map(function ($v) use ($favCountByVolume) {
             $v->is_fav = ($favCountByVolume->get($v->id, 0) >= 5);
+            return $v;
         });
+
+        // Pinned volumes
+        $pinnedVolumes = DB::table('user_pinned_volumes')
+            ->join('volumes', 'user_pinned_volumes.volume_id', '=', 'volumes.id')
+            ->where('user_pinned_volumes.user_id', $user->id)
+            ->orderBy('user_pinned_volumes.position')
+            ->select('volumes.id', 'volumes.name', 'volumes.cover_image', 'user_pinned_volumes.position')
+            ->get();
 
         // Wishlist
         $wishlist = $user->wishlist()
@@ -153,10 +155,10 @@ class ProfileController extends Controller
             'activity'       => $activity,
             'statCharacters' => $statCharacters,
             'statVolumes'    => $statVolumes,
+            'pinnedVolumes'  => $pinnedVolumes,
             'wishlist'       => $wishlist,
             'userLists'      => $userLists,
             'availableYears' => $availableYears,
-            'pinnedVolumes' => $pinnedVolumes,
         ]);
     }
 
@@ -174,16 +176,18 @@ class ProfileController extends Controller
             ->get();
 
         $favCharIds = $user->favouriteCharacters()->pluck('characters.id')->flip();
-        $allCharacters->each(function ($c) use ($favCharIds) {
+
+        $allCharacters = $allCharacters->map(function ($c) use ($favCharIds) {
             $c->is_fav = $favCharIds->has($c->id);
+        return $c;
         });
 
         $allVolumes = DB::table('user_reads')
             ->join('issues', 'user_reads.issue_id', '=', 'issues.id')
             ->join('volumes', 'issues.volume_id', '=', 'volumes.id')
             ->where('user_reads.user_id', $user->id)
-            ->selectRaw('volumes.id, volumes.name, volumes.cover_image, COUNT(*) as read_count')
-            ->groupBy('volumes.id', 'volumes.name', 'volumes.cover_image')
+            ->selectRaw('volumes.id, volumes.name, volumes.cover_image, volumes.count_of_issues, COUNT(*) as read_count')
+            ->groupBy('volumes.id', 'volumes.name', 'volumes.cover_image', 'volumes.count_of_issues')
             ->orderByDesc('read_count')
             ->get();
 
@@ -194,8 +198,9 @@ class ProfileController extends Controller
             ->groupBy('issues.volume_id')
             ->pluck('fav_count', 'volume_id');
 
-        $allVolumes->each(function ($v) use ($favCountByVolume) {
+        $allVolumes = $allVolumes->map(function ($v) use ($favCountByVolume) {
             $v->is_fav = ($favCountByVolume->get($v->id, 0) >= 5);
+            return $v;
         });
 
         return view('profile.stats', [
@@ -203,6 +208,77 @@ class ProfileController extends Controller
             'allCharacters' => $allCharacters,
             'allVolumes'    => $allVolumes,
         ]);
+    }
+
+    public function showList(UserList $list)
+    {
+        if ($list->user_id !== Auth::id()) abort(403);
+        $list->load(['issues.volume']);
+        return view('profile.list', [
+            'user' => Auth::user(),
+            'list' => $list,
+        ]);
+    }
+
+    public function addIssueToList(Request $request, UserList $list)
+    {
+        if ($list->user_id !== Auth::id()) abort(403);
+        $request->validate(['issue_id' => 'required|exists:issues,id']);
+
+        $maxOrder = DB::table('user_list_issues')
+            ->where('user_list_id', $list->id)
+            ->max('sort_order') ?? -1;
+
+        try {
+            $list->issues()->attach($request->issue_id, ['sort_order' => $maxOrder + 1]);
+            $status = 'added';
+        } catch (\Illuminate\Database\QueryException $e) {
+            $status = 'exists';
+        }
+
+        $issue = Issue::with('volume')->find($request->issue_id);
+
+        return response()->json([
+            'status' => $status,
+            'issue'  => [
+                'id'       => $issue->id,
+                'name'     => $issue->name,
+                'image'    => $issue->image,
+                'vol_name' => $issue->volume->name ?? '',
+            ],
+        ]);
+    }
+
+    public function removeIssueFromList(UserList $list, Issue $issue)
+    {
+        if ($list->user_id !== Auth::id()) abort(403);
+        $list->issues()->detach($issue->id);
+        return response()->json(['status' => 'removed']);
+    }
+
+    public function searchIssues(Request $request)
+    {
+        $q = $request->query('q', '');
+
+        $issues = Issue::with('volume')
+            ->where('name', 'like', '%' . $q . '%')
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'image', 'issue_number', 'volume_id']);
+
+        return response()->json($issues->map(fn($i) => [
+            'id'       => $i->id,
+            'name'     => $i->name,
+            'image'    => $i->image,
+            'vol_name' => $i->volume->name ?? '',
+        ]));
+    }
+
+    public function destroyList(UserList $list)
+    {
+        if ($list->user_id !== Auth::id()) abort(403);
+        $list->delete();
+        return response()->json(['status' => 'deleted']);
     }
 
     public function toggleWishlist(Request $request, Issue $issue)

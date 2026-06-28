@@ -52,28 +52,46 @@
 .stats-name  { flex:1; font-size:13px; color:var(--sl-text); min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .stats-name a { color:inherit; text-decoration:none; }
 .stats-name a:hover { color:var(--sl-red); }
-.stats-bar-wrap { width:100px; height:4px; background:rgba(192,57,43,0.15); border-radius:2px; overflow:hidden; flex-shrink:0; }
-.stats-bar-fill { height:100%; background:var(--sl-red); border-radius:2px; }
-.stats-count { font-size:12px; color:var(--sl-muted); width:38px; text-align:right; flex-shrink:0; font-family:var(--font-display); font-weight:600; }
+.stats-bar-wrap { width:100px; height:4px; background:rgba(192,57,43,0.22); border-radius:2px; overflow:hidden; flex-shrink:0; }
+.stats-bar-fill { height:100%; background:#C0392B; border-radius:2px; transition: width .3s ease; }
+.stats-count { font-size:12px; color:var(--sl-muted); width:44px; text-align:right; flex-shrink:0; font-family:var(--font-display); font-weight:600; }
 .stats-heart { font-size:13px; color:var(--sl-amber); flex-shrink:0; width:16px; }
+
+.stats-hidden { display: none; }
+
+.show-more-btn {
+    background: transparent;
+    border: 1px solid var(--sl-border-md);
+    color: var(--sl-muted);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 8px;
+    width: 100%;
+    transition: border-color .15s, color .15s;
+}
+.show-more-btn:hover { border-color: var(--sl-red); color: var(--sl-text); }
 </style>
 @endpush
 
 @section('content')
 <div class="stats-page-wrap">
 
-    <a href="{{ route('profile') }}" class="stats-back">
-        &#8592; Back to Profile
-    </a>
+    <a href="{{ route('profile') }}" class="stats-back">&#8592; Back to Profile</a>
 
     <div class="stats-page-title">{{ $user->display_name }} — Full Stats</div>
 
     {{-- Characters --}}
     <div class="stats-full-section">
         <div class="stats-section-title">All Characters — by issues read</div>
-        <div class="stats-list">
+        <div class="stats-list" id="chars-list">
             @foreach($allCharacters as $i => $char)
-            <div class="stats-item">
+            <div class="stats-item {{ $i >= 5 ? 'stats-hidden chars-extra' : '' }}">
                 <span class="stats-rank">{{ $i + 1 }}</span>
                 <div class="stats-thumb">
                     @if($char->image)
@@ -90,15 +108,23 @@
             </div>
             @endforeach
         </div>
+        @if($allCharacters->count() > 5)
+        <button class="show-more-btn" id="chars-more-btn" onclick="showMore('chars')">
+            Show {{ $allCharacters->count() - 5 }} more characters
+        </button>
+        @endif
     </div>
 
     {{-- Volumes --}}
     <div class="stats-full-section">
         <div class="stats-section-title">All Volumes — by issues read</div>
-        @php $maxVol = $allVolumes->first()->read_count ?? 1; @endphp
-        <div class="stats-list">
+        <div class="stats-list" id="vols-list">
             @foreach($allVolumes as $i => $vol)
-            <div class="stats-item">
+            @php
+                $total   = $vol->count_of_issues ?: $vol->read_count;
+                $fillPct = $total > 0 ? min(round($vol->read_count / $total * 100), 100) : 0;
+            @endphp
+            <div class="stats-item {{ $i >= 5 ? 'stats-hidden vols-extra' : '' }}">
                 <span class="stats-rank">{{ $i + 1 }}</span>
                 <div class="stats-thumb square">
                     @if($vol->cover_image)
@@ -111,14 +137,30 @@
                     <a href="{{ route('volumes.show', $vol->id) }}">{{ $vol->name }}</a>
                 </span>
                 <div class="stats-bar-wrap">
-                    <div class="stats-bar-fill" style="width:{{ round($vol->read_count / $maxVol * 100) }}%"></div>
+                    <div class="stats-bar-fill" style="width:{{ $fillPct }}%"></div>
                 </div>
-                <span class="stats-count">{{ $vol->read_count }}</span>
+                <span class="stats-count">{{ $vol->read_count }}/{{ $total }}</span>
                 <span class="stats-heart">@if($vol->is_fav)&#9829;@else&nbsp;@endif</span>
             </div>
             @endforeach
         </div>
+        @if($allVolumes->count() > 5)
+        <button class="show-more-btn" id="vols-more-btn" onclick="showMore('vols')">
+            Show {{ $allVolumes->count() - 5 }} more volumes
+        </button>
+        @endif
     </div>
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function showMore(type) {
+    document.querySelectorAll('.' + type + '-extra').forEach(el => {
+        el.classList.remove('stats-hidden');
+    });
+    document.getElementById(type + '-more-btn').style.display = 'none';
+}
+</script>
+@endpush

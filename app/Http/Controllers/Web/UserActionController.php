@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\Auth;
 class UserActionController extends Controller
 {
     // Toggle read status on an issue
-    public function toggleRead(int $issueId)
+    public function toggleRead(Issue $issue)
     {
         $user   = Auth::user();
-        $exists = $user->reads()->where('issue_id', $issueId)->exists();
+        $exists = $user->reads()->where('issue_id', $issue->id)->exists();
 
         if ($exists) {
-            $user->reads()->detach($issueId);
+            $user->reads()->detach($issue->id);
             $status = 'unread';
         } else {
             $user->reads()->attach($issue->id, ['read_date' => now()]);
@@ -27,13 +27,13 @@ class UserActionController extends Controller
     }
 
     // Toggle favourite on an issue
-    public function toggleFavouriteIssue(int $issueId)
+    public function toggleFavourite(Issue $issue)
     {
         $user   = Auth::user();
-        $exists = $user->favourites()->where('issue_id', $issueId)->exists();
+        $exists = $user->favourites()->where('issue_id', $issue->id)->exists();
 
         if ($exists) {
-            $user->favourites()->detach($issueId);
+            $user->favourites()->detach($issue->id);
             $status = 'unfavourited';
         } else {
             $user->favourites()->attach($issue->id, ['favourite_date' => now()]);

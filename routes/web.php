@@ -45,8 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/stats', [ProfileController::class, 'stats'])->name('profile.stats');
     Route::post('/profile/wishlist/{issue}',      [ProfileController::class, 'toggleWishlist'])->name('profile.wishlist.toggle');
     Route::post('/profile/lists',                 [ProfileController::class, 'storeList'])->name('profile.lists.store');
-    Route::post('/issues/{id}/read',              [UserActionController::class, 'toggleRead'])->name('issues.toggleRead');
-    Route::post('/issues/{id}/favourite',         [UserActionController::class, 'toggleFavouriteIssue'])->name('issues.toggleFavourite');
+    Route::post('/issues/{issue}/read',      [UserActionController::class, 'toggleRead'])->name('issues.toggleRead');
+    Route::post('/issues/{issue}/favourite', [UserActionController::class, 'toggleFavourite'])->name('issues.toggleFavourite');
     Route::post('/characters/{id}/favourite',     [UserActionController::class, 'toggleFavouriteCharacter'])->name('characters.toggleFavourite');
     Route::post('/profile/pin-volume', [ProfileController::class, 'pinVolume'])->name('profile.pin.volume');
     Route::get('/settings',                  [SettingsController::class, 'index'])->name('settings');
@@ -57,4 +57,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/lists/{list}', [ProfileController::class, 'showList'])->name('profile.lists.show');
     Route::post('/profile/lists/{list}/issues', [ProfileController::class, 'addIssueToList'])->name('profile.lists.issues.add');
     Route::delete('/profile/lists/{list}/issues/{issue}', [ProfileController::class, 'removeIssueFromList'])->name('profile.lists.issues.remove');
+    Route::delete('/profile/lists/{list}',               [ProfileController::class, 'destroyList'])->name('profile.lists.destroy');
+    Route::get('/profile/issues/search',                 [ProfileController::class, 'searchIssues'])->name('profile.issues.search');
 });

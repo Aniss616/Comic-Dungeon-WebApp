@@ -613,7 +613,6 @@
     }
 
     async function toggleRead(id) {
-
         const res = await fetch(`/issues/${id}/read`, {
             method: 'POST',
             headers: {
@@ -621,20 +620,14 @@
                 'Content-Type': 'application/json',
             }
         });
-
         const data = await res.json();
-
         const btn = document.getElementById('readBtn');
-
         if (data.status === 'read') {
-
             btn.textContent = 'Read';
             btn.className = 'btn btn-read';
             btn.style.width = '100%';
             btn.style.justifyContent = 'center';
-
         } else {
-
             btn.textContent = 'Mark as Read';
             btn.className = 'btn btn-ghost';
             btn.style.width = '100%';
@@ -643,7 +636,6 @@
     }
 
     async function toggleFavouriteIssue(id) {
-
         const res = await fetch(`/issues/${id}/favourite`, {
             method: 'POST',
             headers: {
@@ -651,20 +643,14 @@
                 'Content-Type': 'application/json',
             }
         });
-
         const data = await res.json();
-
         const btn = document.getElementById('favBtn');
-
         if (data.status === 'favourited') {
-
             btn.textContent = 'Favourited';
             btn.className = 'btn btn-fav';
             btn.style.width = '100%';
             btn.style.justifyContent = 'center';
-
         } else {
-
             btn.textContent = 'Favourite';
             btn.className = 'btn btn-ghost';
             btn.style.width = '100%';
