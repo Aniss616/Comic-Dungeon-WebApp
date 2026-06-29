@@ -71,9 +71,17 @@
         left: 0;
         right: 0;
         height: 180px;
-        background: linear-gradient(to bottom, transparent, #0D0D0D);
+
+        background: linear-gradient(
+            to bottom,
+            transparent,
+            var(--sl-black)
+        );
+
         z-index: 3;
         pointer-events: none;
+
+        transition: background 0.3s ease;
     }
 
     /* Hero content floats above everything */
@@ -147,6 +155,12 @@
         flex-direction: column;
         gap: 4rem;
     }
+
+    [data-theme="cosmic"] .hero-grain {
+        opacity: 0.3;
+        mix-blend-mode: screen;
+        filter: hue-rotate(130deg) saturate(0.35);
+    }
 </style>
 @endpush
 
@@ -155,7 +169,14 @@
     {{-- HERO SCENE --}}
     <div class="hero-scene">
         <canvas id="city-canvas"></canvas>
+
+        <canvas
+            id="cosmic-canvas"
+            style="display:none; position:absolute; inset:0; width:100%; height:100%; z-index:0;">
+        </canvas>
+
         <canvas id="rain-canvas"></canvas>
+
         <div class="hero-grain" aria-hidden="true"></div>
         <div class="hero-fade"></div>
 
@@ -321,40 +342,31 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 <script type="module">
-    import { initRain } from '{{ Vite::asset('resources/js/rain.js') }}';
+    import { initRain }        from '{{ Vite::asset('resources/js/rain.js') }}';
+    import { initCosmic }      from '{{ Vite::asset('resources/js/cosmic.js') }}';
+    import { getStoredTheme }  from '{{ Vite::asset('resources/js/theme.js') }}';
 
     // ── CITY BACKGROUND ──────────────────────────────────────────
-    (function initCity() {
-        const canvas = document.getElementById('city-canvas');
-        if (!canvas) return;
-
+    // Returns a { destroy } handle so we can tear it down on theme switch.
+    function makeCity(canvas) {
         const ctx = canvas.getContext('2d');
-        let W = 0;
-        let H = 0;
-
-        let buildings = [];
-        let windows   = [];
+        let W = 0, H = 0, animId = null;
+        let buildings = [], windows = [];
 
         function buildCity() {
-            buildings = [];
-            windows   = [];
-
+            buildings = []; windows = [];
             const buildingCount = Math.floor(W / 38);
             let x = 0;
-
             for (let i = 0; i < buildingCount; i++) {
                 const w = 28 + Math.random() * 55;
                 const h = 60 + Math.random() * (H * 0.72);
                 const y = H - h;
-
                 buildings.push({ x, y, w, h });
-
                 if (Math.random() > 0.6) {
                     const tw = 6 + Math.random() * 12;
                     const th = 20 + Math.random() * 60;
                     buildings.push({ x: x + w / 2 - tw / 2, y: y - th, w: tw, h: th });
                 }
-
                 const cols = Math.floor(w / 10);
                 const rows = Math.floor(h / 14);
                 for (let col = 0; col < cols; col++) {
@@ -363,17 +375,15 @@
                             windows.push({
                                 x: x + 4 + col * 10,
                                 y: y + 6 + row * 14,
-                                w: 5,
-                                h: 7,
-                                lit:          Math.random() > 0.4,
-                                flickerRate:  0.002 + Math.random() * 0.006,
+                                w: 5, h: 7,
+                                lit:           Math.random() > 0.4,
+                                flickerRate:   0.002 + Math.random() * 0.006,
                                 flickerOffset: Math.random() * Math.PI * 2,
-                                warm:         Math.random() > 0.5,
+                                warm:          Math.random() > 0.5,
                             });
                         }
                     }
                 }
-
                 x += w + 2 + Math.random() * 6;
                 if (x > W) break;
             }
@@ -381,10 +391,8 @@
 
         function draw(t) {
             if (!W || !H || !isFinite(W) || !isFinite(H)) return;
-
             ctx.clearRect(0, 0, W, H);
 
-            // Sky
             const sky = ctx.createLinearGradient(0, 0, 0, H);
             sky.addColorStop(0,   '#05050A');
             sky.addColorStop(0.5, '#0A0A12');
@@ -392,7 +400,6 @@
             ctx.fillStyle = sky;
             ctx.fillRect(0, 0, W, H);
 
-            // Horizon glow
             const glow = ctx.createRadialGradient(W * 0.5, H * 0.85, 0, W * 0.5, H * 0.85, W * 0.6);
             glow.addColorStop(0,   'rgba(160,40,20,0.18)');
             glow.addColorStop(0.5, 'rgba(100,20,10,0.06)');
@@ -400,7 +407,6 @@
             ctx.fillStyle = glow;
             ctx.fillRect(0, 0, W, H);
 
-            // Fog layers
             ctx.save();
             ctx.globalAlpha = 0.06;
             for (let f = 0; f < 3; f++) {
@@ -413,40 +419,32 @@
             }
             ctx.restore();
 
-            // Building silhouettes
             ctx.fillStyle = '#080810';
             buildings.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
 
-            // Building rim light
             ctx.strokeStyle = 'rgba(100,120,160,0.08)';
             ctx.lineWidth = 1;
             buildings.forEach(b => ctx.strokeRect(b.x, b.y, b.w, b.h));
 
-            // Windows
             windows.forEach(win => {
                 if (!win.lit) return;
                 const flicker = Math.sin(t * win.flickerRate + win.flickerOffset);
                 if (flicker < -0.92) return;
                 const alpha = 0.45 + flicker * 0.2;
-
                 ctx.globalAlpha = Math.max(0.1, alpha);
                 ctx.fillStyle   = win.warm ? '#D4832A' : '#9AB4CC';
                 ctx.fillRect(win.x, win.y, win.w, win.h);
-
                 ctx.globalAlpha = alpha * 0.15;
                 ctx.fillStyle   = win.warm ? '#D4832A' : '#7A99BB';
                 ctx.fillRect(win.x - 3, win.y - 3, win.w + 6, win.h + 6);
-
                 ctx.globalAlpha = 1;
             });
 
-            // Random window flicker
             if (Math.random() < 0.008) {
                 const w = windows[Math.floor(Math.random() * windows.length)];
                 if (w) w.lit = !w.lit;
             }
 
-            // Ground reflection
             const ref = ctx.createLinearGradient(0, H * 0.88, 0, H);
             ref.addColorStop(0, 'rgba(160,40,20,0.08)');
             ref.addColorStop(1, 'rgba(0,0,0,0)');
@@ -454,11 +452,7 @@
             ctx.fillRect(0, H * 0.88, W, H * 0.12);
         }
 
-        let animId;
-        function loop(t) {
-            animId = requestAnimationFrame(loop);
-            draw(t);
-        }
+        function loop(t) { animId = requestAnimationFrame(loop); draw(t); }
 
         function resize() {
             W = canvas.width  = canvas.offsetWidth;
@@ -466,21 +460,74 @@
             if (W > 0 && H > 0) buildCity();
         }
 
-        // Resize first so W/H are valid before loop starts
-        window.addEventListener('resize', resize);
-        resize();
-
+        window.addEventListener('resize', resize, { passive: true });
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) cancelAnimationFrame(animId);
-            else loop(performance.now());
+            if (document.hidden) { cancelAnimationFrame(animId); animId = null; }
+            else if (!animId) animId = requestAnimationFrame(loop);
         });
 
-        // Start loop only after resize has set valid dimensions
-        requestAnimationFrame(loop);
-    })();
+        resize();
+        animId = requestAnimationFrame(loop);
 
-    // ── RAIN (home page only) ─────────────────────────────────────
-    initRain();
+        return {
+            destroy() {
+                cancelAnimationFrame(animId);
+                animId = null;
+                window.removeEventListener('resize', resize);
+            }
+        };
+    }
+
+    // ── BOOT ─────────────────────────────────────────────────────
+    const cityCanvas   = document.getElementById('city-canvas');
+    const cosmicCanvas = document.getElementById('cosmic-canvas');
+    const rainCanvas   = document.getElementById('rain-canvas');
+
+    let cityHandle   = null;
+    let rainHandle   = null;
+    let cosmicHandle = null;
+
+    function startStreetLevel() {
+        cityCanvas.style.display   = '';
+        rainCanvas.style.display   = '';
+        cityHandle   = makeCity(cityCanvas);
+        rainHandle   = initRain(rainCanvas);
+    }
+
+    function stopStreetLevel() {
+        if (cityHandle)   { cityHandle.destroy();   cityHandle = null; }
+        if (rainHandle)   { rainHandle.destroy();   rainHandle = null; }
+        cityCanvas.style.display   = 'none';
+        rainCanvas.style.display   = 'none';
+    }
+
+    function startCosmic() {
+        cosmicCanvas.style.display = '';
+        cosmicHandle = initCosmic(cosmicCanvas);
+    }
+
+    function stopCosmic() {
+        if (cosmicHandle) { cosmicHandle.destroy(); cosmicHandle = null; }
+        cosmicCanvas.style.display = 'none';
+    }
+
+    // Initial boot
+    if (getStoredTheme() === 'cosmic') {
+        startCosmic();
+    } else {
+        startStreetLevel();
+    }
+
+    // Listen for theme toggle
+    window.addEventListener('cd-theme-changed', (e) => {
+        if (e.detail.theme === 'cosmic') {
+            stopStreetLevel();
+            startCosmic();
+        } else {
+            stopCosmic();
+            startStreetLevel();
+        }
+    });
 
     // ── RANDOM CHARACTER MODAL ────────────────────────────────────
     (function () {
@@ -545,8 +592,12 @@
             const aliasEl   = document.getElementById('modalAliases');
             const aliases   = char.aliases;
             if (aliases && aliases.length) {
-                aliasEl.textContent      = Array.isArray(aliases) ? aliases.join(', ') : aliases;
-                aliasWrap.style.display  = 'block';
+                const display = Array.isArray(aliases) ? aliases.slice(0, 10).join(', ') : aliases;
+                const suffix  = Array.isArray(aliases) && aliases.length > 10
+                    ? ` <span style="font-size:11px;color:var(--sl-faint);">+${aliases.length - 10} more</span>`
+                    : '';
+                aliasEl.innerHTML       = display + suffix;
+                aliasWrap.style.display = 'block';
             } else aliasWrap.style.display = 'none';
 
             const powersWrap = document.getElementById('modalPowersWrap');
@@ -615,7 +666,7 @@
             }
         }
 
-        rollBtn.addEventListener('click',     () => { openModal(); rollCharacter(); });
+        rollBtn.addEventListener('click',      () => { openModal(); rollCharacter(); });
         rollAgainBtn.addEventListener('click',  rollCharacter);
         closeBtn.addEventListener('click',      closeModal);
         backdrop.addEventListener('click',      closeModal);

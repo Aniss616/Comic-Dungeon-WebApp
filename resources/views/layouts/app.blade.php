@@ -4,6 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+    (function(){
+        var t = localStorage.getItem('cd-theme') || 'street-level';
+        document.documentElement.setAttribute('data-theme', t);
+        if (t === 'cosmic') {
+            var s = document.documentElement.style;
+            s.setProperty('--sl-black',     '#080D0F');
+            s.setProperty('--sl-surface',   '#0D1520');
+            s.setProperty('--sl-raised',    '#111E2E');
+            s.setProperty('--sl-red',       '#00941c');
+            s.setProperty('--sl-red-dim',   'rgba(26,138,60,0.12)');
+            s.setProperty('--sl-amber',     '#2E7FD4');
+            s.setProperty('--sl-amber-dim', 'rgba(46,127,212,0.10)');
+            s.setProperty('--sl-text',      '#DDE8F0');
+            s.setProperty('--sl-muted',     'rgba(221,232,240,0.45)');
+            s.setProperty('--sl-faint',     'rgba(221,232,240,0.18)');
+        }
+    })();
+    </script>
     <title>Comic Dungeon – @yield('title', 'Home')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" type="image/png" href="{{ asset('images/CD-Logo.ico') }}">
@@ -11,6 +30,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="preload" as="image" href="{{ asset('images/CD-SL-Logo.png') }}">
+    <link rel="preload" as="image" href="{{ asset('images/CD-Cosmic-Logo.png') }}">
     <style>
         :root {
             --sl-black:      #0D0D0D;
@@ -185,6 +205,31 @@
             font-family: var(--font-body); transition: color 0.15s;
         }
         .btn-logout:hover { color: var(--sl-red); }
+        /* Theme toggle button */
+    .theme-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+    }
+    .theme-toggle-btn svg { flex-shrink: 0; }
+
+    /* Smooth color transitions for theme swaps */
+    body, .navbar, .card, .cover-card, .char-card,
+    .badge, .btn, .pill-tab, .search-input,
+    .page-header-eyebrow, .section-link, .stat-number,
+    .navbar-nav a.active, .section-title {
+        transition:
+            background-color 0.28s ease,
+            border-color     0.28s ease,
+            color            0.28s ease,
+            box-shadow       0.28s ease;
+    }
 
         /* ── MAIN ── */
         .page-main {
@@ -343,6 +388,8 @@
                <a href="{{ route('home') }}" class="navbar-logo">
                 <img
                     src="{{ asset('images/CD-SL-Logo.png') }}"
+                    data-sl-src="{{ asset('images/CD-SL-Logo.png') }}"
+                    data-cosmic-src="{{ asset('images/CD-Cosmic-Logo.png') }}"
                     alt="Comic Dungeon"
                     class="navbar-logo-img"
                     width="46"
@@ -364,6 +411,10 @@
                 </div>
 
                 <div class="navbar-actions">
+                    <button id="theme-toggle-btn" class="btn btn-ghost theme-toggle-btn"
+                        type="button" aria-label="Switch theme">
+                    {{-- Populated by theme-switcher.js --}}
+                    </button>
                     @auth
                         <a href="{{ route('profile') }}" class="navbar-user">
                             <div class="navbar-avatar">
