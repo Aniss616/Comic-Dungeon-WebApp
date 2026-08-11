@@ -156,10 +156,9 @@
         gap: 4rem;
     }
 
+    
     [data-theme="cosmic"] .hero-grain {
-        opacity: 0.3;
-        mix-blend-mode: screen;
-        filter: hue-rotate(130deg) saturate(0.35);
+        display: none;
     }
 </style>
 @endpush
