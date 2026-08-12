@@ -151,7 +151,7 @@
 
 .heatmap-cell {
     width: 12px; height: 12px;
-    background: rgba(255,255,255,0.04);  /* was var(--sl-raised) */
+    background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 2px;
     flex-shrink: 0;
@@ -159,10 +159,17 @@
     cursor: default;
 }
 
+/* Street Level — red scale */
 .heatmap-cell[data-v="1"] { background: rgba(192,57,43,.35); border-color: rgba(192,57,43,.45); }
 .heatmap-cell[data-v="2"] { background: rgba(192,57,43,.58); border-color: rgba(192,57,43,.65); }
 .heatmap-cell[data-v="3"] { background: rgba(192,57,43,.82); border-color: rgba(192,57,43,.88); box-shadow: 0 0 4px rgba(192,57,43,.4); }
 .heatmap-cell[data-v="4"] { background: #C0392B; border-color: #e04535; box-shadow: 0 0 6px rgba(192,57,43,.7); }
+
+/* Cosmic — green scale */
+[data-theme="cosmic"] .heatmap-cell[data-v="1"] { background: rgba(26,138,60,.30); border-color: rgba(26,138,60,.42); box-shadow: none; }
+[data-theme="cosmic"] .heatmap-cell[data-v="2"] { background: rgba(26,138,60,.52); border-color: rgba(26,138,60,.62); box-shadow: none; }
+[data-theme="cosmic"] .heatmap-cell[data-v="3"] { background: rgba(26,138,60,.78); border-color: rgba(26,138,60,.88); box-shadow: 0 0 4px rgba(26,138,60,.4); }
+[data-theme="cosmic"] .heatmap-cell[data-v="4"] { background: #1A8A3C; border-color: #22b04e; box-shadow: 0 0 6px rgba(26,138,60,.65); }
 .hm-tooltip {
     display: none;
     position: absolute;
@@ -251,6 +258,8 @@
     border-radius: 2px;
     transition: width 0.3s ease;
 }
+[data-theme="cosmic"] .stats-bar-wrap { background: rgba(26,138,60,0.20); }
+[data-theme="cosmic"] .stats-bar-fill { background: #1A8A3C; }
 .stats-count { font-size: 12px; color: var(--sl-muted); width: 38px; text-align: right; flex-shrink: 0; font-family: var(--font-display); font-weight: 600; }
 .stats-heart { font-size: 13px; color: var(--sl-amber); flex-shrink: 0; width: 16px; }
 
@@ -290,6 +299,7 @@
     cursor: pointer; transition: border-color .15s; text-decoration: none;
 }
 .list-card:hover { border-color: rgba(192,57,43,.3); }
+[data-theme="cosmic"] .list-card:hover { border-color: rgba(26,138,60,.32); }
 .list-covers    { display: flex; }
 .list-cover-thumb {
     width: 28px; height: 40px; background: var(--sl-surface);
@@ -897,5 +907,6 @@ document.getElementById('new-list-input').addEventListener('keydown', e => {
     if (e.key === 'Enter')  saveList();
     if (e.key === 'Escape') closeNewList();
 });
+
 </script>
 @endpush

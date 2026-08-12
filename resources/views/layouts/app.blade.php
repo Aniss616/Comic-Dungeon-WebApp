@@ -375,6 +375,45 @@
 .navbar-logo:hover .navbar-logo-img {
     transform: scale(1.05);
 }
+
+// COSMIC THEME - override hardcoded red values that bypass
+
+/* btn-primary hover (hardcoded #d44030 in base rule) */
+[data-theme="cosmic"] .btn-primary {
+    background: var(--sl-red);
+    border-color: var(--sl-red);
+}
+[data-theme="cosmic"] .btn-primary:hover {
+    background: #1fa84a;
+    border-color: #1fa84a;
+}
+
+/* cover-card hover border (hardcoded rgba(192,57,43,0.3)) */
+[data-theme="cosmic"] .cover-card:hover {
+    border-color: rgba(26,138,60,0.35);
+}
+
+/* char-card hover border (hardcoded rgba(192,57,43,0.25)) */
+[data-theme="cosmic"] .char-card:hover {
+    border-color: rgba(26,138,60,0.28);
+}
+
+/* search input focus ring (hardcoded rgba(192,57,43,0.4)) */
+[data-theme="cosmic"] .search-input:focus {
+    border-color: rgba(26,138,60,0.45);
+}
+
+/* pill-tab active (uses --sl-red already, but ensure no bleed) */
+[data-theme="cosmic"] .pill-tab.active {
+    color: var(--sl-red);
+}
+
+
+[data-theme="cosmic"] .cover-card:hover,
+[data-theme="cosmic"] [style*="borderColor"] {
+    border-color: rgba(26,138,60,0.35) !important;
+}
+
     </style>
     @stack('styles')
 </head>
