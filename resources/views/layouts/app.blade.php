@@ -413,6 +413,25 @@
 [data-theme="cosmic"] [style*="borderColor"] {
     border-color: rgba(26,138,60,0.35) !important;
 }
+/*COSMIC THEME - BADGES*/
+
+[data-theme="cosmic"] .badge-red {
+    background: var(--sl-red-dim);
+    color: var(--sl-red);
+    border-color: rgba(26,138,60,0.20);
+}
+
+[data-theme="cosmic"] .badge-amber {
+    background: var(--sl-amber-dim);
+    color: var(--sl-amber);
+    border-color: rgba(46,127,212,0.20);
+}
+
+[data-theme="cosmic"] .badge-neutral {
+    background: rgba(221,232,240,0.05);
+    color: var(--sl-muted);
+    border-color: var(--sl-border);
+}
 
     </style>
     @stack('styles')
