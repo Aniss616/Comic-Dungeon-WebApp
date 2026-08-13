@@ -23,7 +23,7 @@
         }
     })();
     </script>
-    <title>Comic Dungeon – @yield('title', 'Home')</title>
+    <title>Comic Dungeon - @yield('title', 'Home')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" type="image/png" href="{{ asset('images/CD-Logo.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -254,7 +254,7 @@
             text-decoration: none; display: block;
             transition: border-color 0.2s, transform 0.2s;
         }
-        .cover-card:hover { border-color: rgba(192,57,43,0.3); transform: translateY(-3px); }
+        .cover-card:hover { border-color: var(--sl-red); transform: translateY(-3px); }
         .cover-card-img { aspect-ratio: 2/3; background: var(--sl-surface); overflow: hidden; }
         .cover-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
         .cover-card:hover .cover-card-img img { transform: scale(1.04); }
@@ -272,11 +272,11 @@
             gap: 0.875rem; padding: 0.875rem 1.125rem; text-decoration: none;
             transition: border-color 0.2s, background 0.2s;
         }
-        .char-card:hover { border-color: rgba(192,57,43,0.25); background: var(--sl-surface); }
+        .char-card:hover { border-color: var(--sl-red); background: var(--sl-surface); }
         .char-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--sl-surface); border: 1px solid var(--sl-border-md); }
         .char-avatar-placeholder {
             width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
-            background: var(--sl-red-dim); border: 1px solid rgba(192,57,43,0.2);
+            background: var(--sl-red-dim); border: 1px solid var(--sl-red);
             display: flex; align-items: center; justify-content: center;
             font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; color: var(--sl-red);
         }
@@ -388,14 +388,14 @@
     border-color: #1fa84a;
 }
 
-/* cover-card hover border (hardcoded rgba(192,57,43,0.3)) */
+/* cover-card hover border */
 [data-theme="cosmic"] .cover-card:hover {
-    border-color: rgba(26,138,60,0.35);
+    border-color: var(--sl-red);
 }
 
 /* char-card hover border (hardcoded rgba(192,57,43,0.25)) */
 [data-theme="cosmic"] .char-card:hover {
-    border-color: rgba(26,138,60,0.28);
+    border-color: var(--sl-red);
 }
 
 /* search input focus ring (hardcoded rgba(192,57,43,0.4)) */
@@ -411,7 +411,7 @@
 
 [data-theme="cosmic"] .cover-card:hover,
 [data-theme="cosmic"] [style*="borderColor"] {
-    border-color: rgba(26,138,60,0.35) !important;
+    border-color: var(--sl-red) !important;
 }
 /*COSMIC THEME - BADGES*/
 

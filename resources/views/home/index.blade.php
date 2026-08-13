@@ -231,8 +231,8 @@
                 <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:1.125rem;">
                     @foreach ($featuredCharacters as $character)
                         <a href="{{ route('characters.show', $character->id) }}" style="background:var(--sl-raised); border:1px solid var(--sl-border); border-radius:var(--sl-radius-lg); overflow:hidden; text-decoration:none; display:block; transition:border-color 0.2s, transform 0.2s;"
-                           onmouseover="this.style.borderColor='rgba(192,57,43,0.3)';this.style.transform='translateY(-3px)'"
-                           onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.transform='translateY(0)'">
+                           onmouseover="this.style.borderColor='var(--sl-red)';this.style.transform='translateY(-3px)'"
+                           onmouseout="this.style.borderColor='var(--sl-border)';this.style.transform='translateY(0)'">
                             <div style="aspect-ratio:1/1; overflow:hidden; background:var(--sl-surface);">
                                 <img src="{{ $character->image }}" alt="{{ $character->name }}"
                                      style="width:100%; height:100%; object-fit:cover; object-position:top; display:block; transition:transform 0.3s;"
