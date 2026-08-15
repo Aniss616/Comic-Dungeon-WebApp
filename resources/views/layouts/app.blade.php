@@ -8,8 +8,8 @@
     (function(){
         var t = localStorage.getItem('cd-theme') || 'street-level';
         document.documentElement.setAttribute('data-theme', t);
+        var s = document.documentElement.style;
         if (t === 'cosmic') {
-            var s = document.documentElement.style;
             s.setProperty('--sl-black',     '#080D0F');
             s.setProperty('--sl-surface',   '#0D1520');
             s.setProperty('--sl-raised',    '#111E2E');
@@ -20,6 +20,17 @@
             s.setProperty('--sl-text',      '#DDE8F0');
             s.setProperty('--sl-muted',     'rgba(221,232,240,0.45)');
             s.setProperty('--sl-faint',     'rgba(221,232,240,0.18)');
+        } else if (t === 'supernatural') {
+            s.setProperty('--sl-black',     '#0A080F');
+            s.setProperty('--sl-surface',   '#150F1F');
+            s.setProperty('--sl-raised',    '#1C1430');
+            s.setProperty('--sl-red',       '#7B2FBE');
+            s.setProperty('--sl-red-dim',   'rgba(123,47,190,0.14)');
+            s.setProperty('--sl-amber',     '#C084FC');
+            s.setProperty('--sl-amber-dim', 'rgba(192,132,252,0.10)');
+            s.setProperty('--sl-text',      '#E8E0F5');
+            s.setProperty('--sl-muted',     'rgba(232,224,245,0.45)');
+            s.setProperty('--sl-faint',     'rgba(232,224,245,0.18)');
         }
     })();
     </script>
@@ -31,6 +42,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="preload" as="image" href="{{ asset('images/CD-SL-Logo.png') }}">
     <link rel="preload" as="image" href="{{ asset('images/CD-Cosmic-Logo.png') }}">
+    <link rel="preload" as="image" href="{{ asset('images/CD-Supernatural-Logo.png') }}">
     <style>
         :root {
             --sl-black:      #0D0D0D;
@@ -205,31 +217,69 @@
             font-family: var(--font-body); transition: color 0.15s;
         }
         .btn-logout:hover { color: var(--sl-red); }
-        /* Theme toggle button */
-    .theme-toggle-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-        padding: 4px 10px;
-    }
-    .theme-toggle-btn svg { flex-shrink: 0; }
 
-    /* Smooth color transitions for theme swaps */
-    body, .navbar, .card, .cover-card, .char-card,
-    .badge, .btn, .pill-tab, .search-input,
-    .page-header-eyebrow, .section-link, .stat-number,
-    .navbar-nav a.active, .section-title {
-        transition:
-            background-color 0.28s ease,
-            border-color     0.28s ease,
-            color            0.28s ease,
-            box-shadow       0.28s ease;
-    }
+        /* Theme toggle button */
+        .theme-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+        }
+        .theme-toggle-btn svg { flex-shrink: 0; }
+
+        /* Theme dropdown */
+        .theme-dropdown { position: relative; }
+
+        .theme-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            min-width: 160px;
+            background: var(--sl-raised);
+            border: 1px solid var(--sl-border-md);
+            border-radius: var(--sl-radius);
+            padding: 4px;
+            list-style: none;
+            z-index: 200;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .theme-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.45rem 0.6rem;
+            border-radius: 4px;
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--sl-muted);
+            cursor: pointer;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .theme-dropdown-item:hover { background: var(--sl-surface); color: var(--sl-text); }
+        .theme-dropdown-item.is-active { color: var(--sl-red); }
+        .theme-dropdown-item svg { flex-shrink: 0; }
+
+        /* Smooth color transitions for theme swaps */
+        body, .navbar, .card, .cover-card, .char-card,
+        .badge, .btn, .pill-tab, .search-input,
+        .page-header-eyebrow, .section-link, .stat-number,
+        .navbar-nav a.active, .section-title {
+            transition:
+                background-color 0.28s ease,
+                border-color     0.28s ease,
+                color            0.28s ease,
+                box-shadow       0.28s ease;
+        }
 
         /* ── MAIN ── */
         .page-main {
@@ -346,92 +396,150 @@
         .mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; } .mt-3 { margin-top: 1.5rem; } .mt-4 { margin-top: 2rem; }
         .mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; } .mb-3 { margin-bottom: 1.5rem; }
         .w-full { width: 100%; }
-.navbar-logo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
 
-    width: 46px;
-    height: 46px;
+        .navbar-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
 
-    font-size: 0;
-    line-height: 0;
+            width: 46px;
+            height: 46px;
 
-    overflow: hidden;
-    text-decoration: none;
-}
+            font-size: 0;
+            line-height: 0;
 
-
-.navbar-logo-img {
-    width: 46px;
-    height: 46px;
-    display: block;
-    object-fit: contain;
-
-    transform: translateZ(0);
-    will-change: transform;
-}
-
-.navbar-logo:hover .navbar-logo-img {
-    transform: scale(1.05);
-}
-
-// COSMIC THEME - override hardcoded red values that bypass
-
-/* btn-primary hover (hardcoded #d44030 in base rule) */
-[data-theme="cosmic"] .btn-primary {
-    background: var(--sl-red);
-    border-color: var(--sl-red);
-}
-[data-theme="cosmic"] .btn-primary:hover {
-    background: #1fa84a;
-    border-color: #1fa84a;
-}
-
-/* cover-card hover border */
-[data-theme="cosmic"] .cover-card:hover {
-    border-color: var(--sl-red);
-}
-
-/* char-card hover border (hardcoded rgba(192,57,43,0.25)) */
-[data-theme="cosmic"] .char-card:hover {
-    border-color: var(--sl-red);
-}
-
-/* search input focus ring (hardcoded rgba(192,57,43,0.4)) */
-[data-theme="cosmic"] .search-input:focus {
-    border-color: rgba(26,138,60,0.45);
-}
-
-/* pill-tab active (uses --sl-red already, but ensure no bleed) */
-[data-theme="cosmic"] .pill-tab.active {
-    color: var(--sl-red);
-}
+            overflow: hidden;
+            text-decoration: none;
+        }
 
 
-[data-theme="cosmic"] .cover-card:hover,
-[data-theme="cosmic"] [style*="borderColor"] {
-    border-color: var(--sl-red) !important;
-}
-/*COSMIC THEME - BADGES*/
+        .navbar-logo-img {
+            width: 46px;
+            height: 46px;
+            display: block;
+            object-fit: contain;
 
-[data-theme="cosmic"] .badge-red {
-    background: var(--sl-red-dim);
-    color: var(--sl-red);
-    border-color: rgba(26,138,60,0.20);
-}
+            transform: translateZ(0);
+            will-change: transform;
+        }
 
-[data-theme="cosmic"] .badge-amber {
-    background: var(--sl-amber-dim);
-    color: var(--sl-amber);
-    border-color: rgba(46,127,212,0.20);
-}
+        .navbar-logo:hover .navbar-logo-img {
+            transform: scale(1.05);
+        }
 
-[data-theme="cosmic"] .badge-neutral {
-    background: rgba(221,232,240,0.05);
-    color: var(--sl-muted);
-    border-color: var(--sl-border);
-}
+        /* COSMIC THEME - override hardcoded red values that bypass */
+
+        /* btn-primary hover (hardcoded #d44030 in base rule) */
+        [data-theme="cosmic"] .btn-primary {
+            background: var(--sl-red);
+            border-color: var(--sl-red);
+        }
+        [data-theme="cosmic"] .btn-primary:hover {
+            background: #1fa84a;
+            border-color: #1fa84a;
+        }
+
+        /* cover-card hover border */
+        [data-theme="cosmic"] .cover-card:hover {
+            border-color: var(--sl-red);
+        }
+
+        /* char-card hover border (hardcoded rgba(192,57,43,0.25)) */
+        [data-theme="cosmic"] .char-card:hover {
+            border-color: var(--sl-red);
+        }
+
+        /* search input focus ring (hardcoded rgba(192,57,43,0.4)) */
+        [data-theme="cosmic"] .search-input:focus {
+            border-color: rgba(26,138,60,0.45);
+        }
+
+        /* pill-tab active (uses --sl-red already, but ensure no bleed) */
+        [data-theme="cosmic"] .pill-tab.active {
+            color: var(--sl-red);
+        }
+
+
+        [data-theme="cosmic"] .cover-card:hover,
+        [data-theme="cosmic"] [style*="borderColor"] {
+            border-color: var(--sl-red) !important;
+        }
+        /*COSMIC THEME - BADGES*/
+
+        [data-theme="cosmic"] .badge-red {
+            background: var(--sl-red-dim);
+            color: var(--sl-red);
+            border-color: rgba(26,138,60,0.20);
+        }
+
+        [data-theme="cosmic"] .badge-amber {
+            background: var(--sl-amber-dim);
+            color: var(--sl-amber);
+            border-color: rgba(46,127,212,0.20);
+        }
+
+        [data-theme="cosmic"] .badge-neutral {
+            background: rgba(221,232,240,0.05);
+            color: var(--sl-muted);
+            border-color: var(--sl-border);
+        }
+
+        /* SUPERNATURAL THEME - override hardcoded red values that bypass */
+
+        /* btn-primary hover (hardcoded #d44030 in base rule) */
+        [data-theme="supernatural"] .btn-primary {
+            background: var(--sl-red);
+            border-color: var(--sl-red);
+        }
+        [data-theme="supernatural"] .btn-primary:hover {
+            background: #6522A0;
+            border-color: #6522A0;
+        }
+
+        /* cover-card hover border */
+        [data-theme="supernatural"] .cover-card:hover {
+            border-color: var(--sl-red);
+        }
+
+        /* char-card hover border (hardcoded rgba(192,57,43,0.25)) */
+        [data-theme="supernatural"] .char-card:hover {
+            border-color: var(--sl-red);
+        }
+
+        /* search input focus ring (hardcoded rgba(192,57,43,0.4)) */
+        [data-theme="supernatural"] .search-input:focus {
+            border-color: rgba(123,47,190,0.45);
+        }
+
+        /* pill-tab active (uses --sl-red already, but ensure no bleed) */
+        [data-theme="supernatural"] .pill-tab.active {
+            color: var(--sl-red);
+        }
+
+        [data-theme="supernatural"] .cover-card:hover,
+        [data-theme="supernatural"] [style*="borderColor"] {
+            border-color: var(--sl-red) !important;
+        }
+
+        /* SUPERNATURAL THEME - BADGES */
+
+        [data-theme="supernatural"] .badge-red {
+            background: var(--sl-red-dim);
+            color: var(--sl-red);
+            border-color: rgba(123,47,190,0.20);
+        }
+
+        [data-theme="supernatural"] .badge-amber {
+            background: var(--sl-amber-dim);
+            color: var(--sl-amber);
+            border-color: rgba(192,132,252,0.20);
+        }
+
+        [data-theme="supernatural"] .badge-neutral {
+            background: rgba(232,224,245,0.05);
+            color: var(--sl-muted);
+            border-color: var(--sl-border);
+        }
 
     </style>
     @stack('styles')
@@ -448,6 +556,7 @@
                     src="{{ asset('images/CD-SL-Logo.png') }}"
                     data-sl-src="{{ asset('images/CD-SL-Logo.png') }}"
                     data-cosmic-src="{{ asset('images/CD-Cosmic-Logo.png') }}"
+                    data-supernatural-src="{{ asset('images/CD-Supernatural-Logo.png') }}"
                     alt="Comic Dungeon"
                     class="navbar-logo-img"
                     width="46"
@@ -469,10 +578,15 @@
                 </div>
 
                 <div class="navbar-actions">
-                    <button id="theme-toggle-btn" class="btn btn-ghost theme-toggle-btn"
-                        type="button" aria-label="Switch theme">
-                    {{-- Populated by theme-switcher.js --}}
-                    </button>
+                    <div class="theme-dropdown" id="theme-dropdown">
+                        <button id="theme-dropdown-btn" class="btn btn-ghost theme-toggle-btn"
+                            type="button" aria-haspopup="listbox" aria-expanded="false">
+                            {{-- Populated by theme-switcher.js --}}
+                        </button>
+                        <ul class="theme-dropdown-menu" id="theme-dropdown-menu" role="listbox" hidden>
+                            {{-- Populated by theme-switcher.js --}}
+                        </ul>
+                    </div>
                     @auth
                         <a href="{{ route('profile') }}" class="navbar-user">
                             <div class="navbar-avatar">

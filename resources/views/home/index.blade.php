@@ -157,7 +157,8 @@
     }
 
     
-    [data-theme="cosmic"] .hero-grain {
+    [data-theme="cosmic"] .hero-grain,
+    [data-theme="supernatural"] .hero-grain {
         display: none;
     }
 </style>
@@ -171,6 +172,11 @@
 
         <canvas
             id="cosmic-canvas"
+            style="display:none; position:absolute; inset:0; width:100%; height:100%; z-index:0;">
+        </canvas>
+
+        <canvas
+            id="supernatural-canvas"
             style="display:none; position:absolute; inset:0; width:100%; height:100%; z-index:0;">
         </canvas>
 
@@ -341,9 +347,10 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 <script type="module">
-    import { initRain }        from '{{ Vite::asset('resources/js/rain.js') }}';
-    import { initCosmic }      from '{{ Vite::asset('resources/js/cosmic.js') }}';
-    import { getStoredTheme }  from '{{ Vite::asset('resources/js/theme.js') }}';
+    import { initRain }         from '{{ Vite::asset('resources/js/rain.js') }}';
+    import { initCosmic }       from '{{ Vite::asset('resources/js/cosmic.js') }}';
+    import { initSupernatural } from '{{ Vite::asset('resources/js/supernatural.js') }}';
+    import { getStoredTheme }   from '{{ Vite::asset('resources/js/theme.js') }}';
 
     // ── CITY BACKGROUND ──────────────────────────────────────────
     // Returns a { destroy } handle so we can tear it down on theme switch.
@@ -478,13 +485,15 @@
     }
 
     // ── BOOT ─────────────────────────────────────────────────────
-    const cityCanvas   = document.getElementById('city-canvas');
-    const cosmicCanvas = document.getElementById('cosmic-canvas');
-    const rainCanvas   = document.getElementById('rain-canvas');
+    const cityCanvas         = document.getElementById('city-canvas');
+    const cosmicCanvas       = document.getElementById('cosmic-canvas');
+    const supernaturalCanvas = document.getElementById('supernatural-canvas');
+    const rainCanvas         = document.getElementById('rain-canvas');
 
-    let cityHandle   = null;
-    let rainHandle   = null;
-    let cosmicHandle = null;
+    let cityHandle         = null;
+    let rainHandle          = null;
+    let cosmicHandle        = null;
+    let supernaturalHandle  = null;
 
     function startStreetLevel() {
         cityCanvas.style.display   = '';
@@ -510,22 +519,37 @@
         cosmicCanvas.style.display = 'none';
     }
 
-    // Initial boot
-    if (getStoredTheme() === 'cosmic') {
-        startCosmic();
-    } else {
-        startStreetLevel();
+    function startSupernatural() {
+        supernaturalCanvas.style.display = '';
+        supernaturalHandle = initSupernatural(supernaturalCanvas);
     }
 
+    function stopSupernatural() {
+        if (supernaturalHandle) { supernaturalHandle.destroy(); supernaturalHandle = null; }
+        supernaturalCanvas.style.display = 'none';
+    }
+
+    function startScene(theme) {
+        if (theme === 'cosmic') startCosmic();
+        else if (theme === 'supernatural') startSupernatural();
+        else startStreetLevel();
+    }
+
+    function stopScene(theme) {
+        if (theme === 'cosmic') stopCosmic();
+        else if (theme === 'supernatural') stopSupernatural();
+        else stopStreetLevel();
+    }
+
+    // Initial boot
+    startScene(getStoredTheme());
+
     // Listen for theme toggle
+    let currentTheme = getStoredTheme();
     window.addEventListener('cd-theme-changed', (e) => {
-        if (e.detail.theme === 'cosmic') {
-            stopStreetLevel();
-            startCosmic();
-        } else {
-            stopCosmic();
-            startStreetLevel();
-        }
+        stopScene(currentTheme);
+        currentTheme = e.detail.theme;
+        startScene(currentTheme);
     });
 
     // ── RANDOM CHARACTER MODAL ────────────────────────────────────

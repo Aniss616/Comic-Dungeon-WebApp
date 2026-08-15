@@ -27,6 +27,20 @@ export const THEMES = {
     '--sl-muted':     'rgba(221,232,240,0.45)',
     '--sl-faint':     'rgba(221,232,240,0.18)',
   },
+  'supernatural': {
+    '--sl-black':     '#0A080F',
+    '--sl-surface':   '#150F1F',
+    '--sl-raised':    '#1C1430',
+    '--sl-border':    'rgba(255,255,255,0.06)',
+    '--sl-border-md': 'rgba(255,255,255,0.11)',
+    '--sl-red':       '#7B2FBE',
+    '--sl-red-dim':   'rgba(123,47,190,0.14)',
+    '--sl-amber':     '#C084FC',
+    '--sl-amber-dim': 'rgba(192,132,252,0.10)',
+    '--sl-text':      '#E8E0F5',
+    '--sl-muted':     'rgba(232,224,245,0.45)',
+    '--sl-faint':     'rgba(232,224,245,0.18)',
+  },
 };
 
 export function applyTheme(name, animate = false) {
@@ -48,7 +62,6 @@ export function applyTheme(name, animate = false) {
       document.body.appendChild(overlay);
     }
 
-    // Force reflow so the transition actually fires from 0
     overlay.getBoundingClientRect();
     overlay.style.opacity = '0.6';
 
@@ -59,7 +72,6 @@ export function applyTheme(name, animate = false) {
       }
       swapLogo(name);
       overlay.style.opacity = '0';
-      // Notify home page to swap its canvas
       window.dispatchEvent(new CustomEvent('cd-theme-changed', { detail: { theme: name } }));
       setTimeout(() => overlay.remove(), 300);
     }, 270);
@@ -78,9 +90,10 @@ export function applyTheme(name, animate = false) {
 function swapLogo(name) {
   const img = document.querySelector('.navbar-logo-img');
   if (!img) return;
-  const src = name === 'cosmic'
-    ? img.dataset.cosmicSrc
-    : img.dataset.slSrc;
+  let src;
+  if (name === 'cosmic') src = img.dataset.cosmicSrc;
+  else if (name === 'supernatural') src = img.dataset.supernaturalSrc;
+  else src = img.dataset.slSrc;
   if (src && img.src !== src) img.src = src;
 }
 
