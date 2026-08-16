@@ -4,7 +4,7 @@
 
 @push('styles')
 <style>
-/* ── Layout ─────────────────────────────────────────────────────── */
+/* Layout */
 .profile-wrap {
     display: flex;
     min-height: calc(100vh - 58px);
@@ -13,7 +13,7 @@
     padding: 0 24px;
 }
 
-/* ── Sidebar ─────────────────────────────────────────────────────── */
+/* Sidebar */
 .profile-sidebar {
     width: 220px;
     flex-shrink: 0;
@@ -83,10 +83,10 @@
 }
 .sidebar-stat-val { font-size: 15px; font-weight: 500; color: var(--sl-text); }
 
-/* ── Main ────────────────────────────────────────────────────────── */
+/* Main */
 .profile-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
-/* ── Tab bar ─────────────────────────────────────────────────────── */
+/* Tab bar */
 .profile-tabs {
     display: flex;
     border-bottom: 1px solid var(--sl-border);
@@ -118,13 +118,13 @@
 .profile-tab:hover { color: var(--sl-text); }
 .profile-tab.active { color: var(--sl-red); border-bottom-color: var(--sl-red); }
 
-/* ── Panels ──────────────────────────────────────────────────────── */
+/* Panels */
 .profile-panels { padding: 28px; }
 
 .tab-panel         { display: none; }
 .tab-panel.active  { display: block; }
 
-/* ── Section label ───────────────────────────────────────────────── */
+/* Section label */
 .p-section-label {
     font-family: var(--font-display);
     font-size: 11px;
@@ -136,14 +136,14 @@
 }
 .p-section-gap { margin-bottom: 32px; }
 
-/* ── Pinned grid ─────────────────────────────────────────────────── */
+/* Pinned grid */
 .pinned-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
 }
 
-/* ── Heatmap ─────────────────────────────────────────────────────── */
+/* Heatmap */
 .heatmap-outer  { display: flex; gap: 14px; align-items: flex-start; }
 .heatmap-main   { flex: 1; min-width: 0; }
 .heatmap-grid   { display: flex; gap: 3px; align-items: flex-start; }
@@ -159,17 +159,24 @@
     cursor: default;
 }
 
-/* Street Level — red scale */
+/* Street Level - red scale */
 .heatmap-cell[data-v="1"] { background: rgba(192,57,43,.35); border-color: rgba(192,57,43,.45); }
 .heatmap-cell[data-v="2"] { background: rgba(192,57,43,.58); border-color: rgba(192,57,43,.65); }
 .heatmap-cell[data-v="3"] { background: rgba(192,57,43,.82); border-color: rgba(192,57,43,.88); box-shadow: 0 0 4px rgba(192,57,43,.4); }
 .heatmap-cell[data-v="4"] { background: #C0392B; border-color: #e04535; box-shadow: 0 0 6px rgba(192,57,43,.7); }
 
-/* Cosmic — green scale */
+/* Cosmic - green scale */
 [data-theme="cosmic"] .heatmap-cell[data-v="1"] { background: rgba(26,138,60,.30); border-color: rgba(26,138,60,.42); box-shadow: none; }
 [data-theme="cosmic"] .heatmap-cell[data-v="2"] { background: rgba(26,138,60,.52); border-color: rgba(26,138,60,.62); box-shadow: none; }
 [data-theme="cosmic"] .heatmap-cell[data-v="3"] { background: rgba(26,138,60,.78); border-color: rgba(26,138,60,.88); box-shadow: 0 0 4px rgba(26,138,60,.4); }
 [data-theme="cosmic"] .heatmap-cell[data-v="4"] { background: #1A8A3C; border-color: #22b04e; box-shadow: 0 0 6px rgba(26,138,60,.65); }
+
+/* Supernatural - purple scale */
+[data-theme="supernatural"] .heatmap-cell[data-v="1"] { background: rgba(123,47,190,.32); border-color: rgba(123,47,190,.44); box-shadow: none; }
+[data-theme="supernatural"] .heatmap-cell[data-v="2"] { background: rgba(123,47,190,.55); border-color: rgba(123,47,190,.65); box-shadow: none; }
+[data-theme="supernatural"] .heatmap-cell[data-v="3"] { background: rgba(123,47,190,.80); border-color: rgba(123,47,190,.88); box-shadow: 0 0 4px rgba(123,47,190,.45); }
+[data-theme="supernatural"] .heatmap-cell[data-v="4"] { background: #7B2FBE; border-color: #C084FC; box-shadow: 0 0 6px rgba(192,132,252,.65); }
+
 .hm-tooltip {
     display: none;
     position: absolute;
@@ -201,7 +208,7 @@
 .heatmap-year-btn:hover { color: var(--sl-text); }
 .heatmap-year-btn.active { color: var(--sl-red); background: var(--sl-red-dim); }
 
-/* ── Activity ────────────────────────────────────────────────────── */
+/* Activity */
 .activity-feed { display: flex; flex-direction: column; gap: 2px; }
 .activity-item {
     display: flex; align-items: center; gap: 11px;
@@ -226,7 +233,7 @@
 }
 .more-btn:hover { border-color: var(--sl-red); color: var(--sl-text); }
 
-/* ── Stats ───────────────────────────────────────────────────────── */
+/* Stats */
 .stats-list { display: flex; flex-direction: column; gap: 2px; }
 .stats-item {
     display: flex; align-items: center; gap: 10px; padding: 9px 12px;
@@ -260,10 +267,12 @@
 }
 [data-theme="cosmic"] .stats-bar-wrap { background: rgba(26,138,60,0.20); }
 [data-theme="cosmic"] .stats-bar-fill { background: #1A8A3C; }
+[data-theme="supernatural"] .stats-bar-wrap { background: rgba(123,47,190,0.22); }
+[data-theme="supernatural"] .stats-bar-fill { background: #7B2FBE; }
 .stats-count { font-size: 12px; color: var(--sl-muted); width: 38px; text-align: right; flex-shrink: 0; font-family: var(--font-display); font-weight: 600; }
 .stats-heart { font-size: 13px; color: var(--sl-amber); flex-shrink: 0; width: 16px; }
 
-/* ── Wishlist ────────────────────────────────────────────────────── */
+/* Wishlist */
 .wishlist-list { display: flex; flex-direction: column; gap: 2px; }
 .wishlist-item {
     display: flex; align-items: center; gap: 12px; padding: 10px 12px;
@@ -291,7 +300,7 @@
 }
 .wish-remove:hover { color: var(--sl-red); }
 
-/* ── Lists ───────────────────────────────────────────────────────── */
+/* Lists */
 .lists-wrap { display: flex; flex-direction: column; gap: 8px; }
 .list-card {
     background: var(--sl-raised); border: 1px solid var(--sl-border); border-radius: 4px;
@@ -300,6 +309,7 @@
 }
 .list-card:hover { border-color: rgba(192,57,43,.3); }
 [data-theme="cosmic"] .list-card:hover { border-color: rgba(26,138,60,.32); }
+[data-theme="supernatural"] .list-card:hover { border-color: rgba(123,47,190,.35); }
 .list-covers    { display: flex; }
 .list-cover-thumb {
     width: 28px; height: 40px; background: var(--sl-surface);
@@ -346,7 +356,7 @@
 }
 .new-list-cancel:hover { color: var(--sl-text); }
 
-/* ── Empty state ─────────────────────────────────────────────────── */
+/* Empty state */
 .empty-state { padding: 48px 0; text-align: center; color: var(--sl-muted); font-size: 13px; }
 .empty-state strong {
     display: block; font-family: var(--font-display); font-size: 16px; font-weight: 700;
@@ -358,7 +368,7 @@
 @section('content')
 <div class="profile-wrap">
 
-    {{-- ── Sidebar ────────────────────────────────────────────────── --}}
+    {{-- Sidebar --}}
     <aside class="profile-sidebar">
         <div class="profile-avatar">
             @if($user->avatar ?? false)
@@ -406,7 +416,7 @@
         </div>
     </aside>
 
-    {{-- ── Main ───────────────────────────────────────────────────── --}}
+    {{-- Main --}}
     <div class="profile-main">
 
         <nav class="profile-tabs" role="tablist">
@@ -419,7 +429,7 @@
 
         <div class="profile-panels">
 
-            {{-- ══════════════════════════════════════════ OVERVIEW ══ --}}
+            {{-- OVERVIEW --}}
             <div class="tab-panel active" id="panel-overview">
 
                 {{-- Pinned Volumes --}}
@@ -497,7 +507,7 @@
 
             </div>{{-- /panel-overview --}}
 
-            {{-- ══════════════════════════════════════════ ACTIVITY ══ --}}
+            {{-- ACTIVITY --}}
             <div class="tab-panel" id="panel-activity">
                 <div class="p-section-label">All Activity</div>
                 @if($activity->isEmpty())
@@ -522,7 +532,7 @@
                 @endif
             </div>{{-- /panel-activity --}}
 
-            {{-- ══════════════════════════════════════════ STATS ═════ --}}
+            {{-- STATS --}}
             <div class="tab-panel" id="panel-stats">
 
                 <div class="p-section-gap">
@@ -604,7 +614,7 @@
 
             </div>{{-- /panel-stats --}}
 
-            {{-- ══════════════════════════════════════════ WISHLIST ══ --}}
+            {{-- WISHLIST --}}
             <div class="tab-panel" id="panel-wishlist">
                 <div class="p-section-label">Wishlist</div>
                 @if($wishlist->isEmpty())
@@ -634,7 +644,7 @@
                 @endif
             </div>{{-- /panel-wishlist --}}
 
-            {{-- ══════════════════════════════════════════ LISTS ═════ --}}
+            {{-- LISTS --}}
             <div class="tab-panel" id="panel-lists">
                 <div class="p-section-label">Custom Lists</div>
 
@@ -700,7 +710,7 @@ const tooltipRaw      = @json(
     ]))
 );
 
-// ── Tab switching ───────────────────────────────────────────────────
+// Tab switching
 function switchTab(name) {
     document.querySelectorAll('.profile-tab').forEach(t => {
         const on = t.dataset.tab === name;
@@ -715,7 +725,7 @@ document.querySelectorAll('.profile-tab').forEach(t => {
     t.addEventListener('click', () => switchTab(t.dataset.tab));
 });
 
-// ── Heatmap ─────────────────────────────────────────────────────────
+// Heatmap
 function buildHeatmap(countData, ttData) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -829,7 +839,7 @@ function buildYearSelector() {
 buildHeatmap(heatmapRaw, tooltipRaw);
 buildYearSelector();
 
-// ── Wishlist remove ─────────────────────────────────────────────────
+// Wishlist remove
 function removeFromWishlist(btn, issueId) {
     btn.disabled = true;
     fetch(`/profile/wishlist/${issueId}`, {
@@ -851,7 +861,7 @@ function removeFromWishlist(btn, issueId) {
     .catch(() => { btn.disabled = false; });
 }
 
-// ── New list ────────────────────────────────────────────────────────
+// New list
 function openNewList() {
     document.getElementById('new-list-form').classList.add('open');
     document.getElementById('new-list-btn').style.display = 'none';
